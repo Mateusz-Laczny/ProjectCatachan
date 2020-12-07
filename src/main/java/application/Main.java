@@ -1,18 +1,38 @@
 package application;
 
-import datatypes.Direction;
-import datatypes.Genotype;
-import datatypes.Vector2d;
-import entities.Animal;
-import entities.Simulation;
-import entities.WorldMap;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
-public class Main {
+
+public class Main extends Application {
+    private Stage primaryStage;
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        primaryStage = stage;
+
+        System.out.println(getClass().getResource("/fxml/main.fxml"));
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+        Parent root = loader.load();
+        MainApplicationController mainApplicationController = loader.getController();
+        mainApplicationController.setMainApp(this);
+
+
+        stage.setTitle("CatachanSimulator 1.0");
+        stage.setScene(new Scene(root));
+        //stage.getScene().getStylesheets().add(getClass().getResource("MainWindowStyleSheet.css").toExternalForm());
+        stage.show();
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
     public static void main(String[] args) {
-        WorldMap map = new WorldMap(30, 30, 0.2);
-        Simulation simulation = new Simulation(20, map, 100,
-                32, 8, 10);
-
-        simulation.runSimulation();
+        launch(args);
     }
 }

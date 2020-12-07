@@ -320,11 +320,11 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
     /**
      * Moves all animals one tile in the random direction, according to the animal's genome
      */
-    public void moveAnimals() {
+    public void moveAnimals(int moveEnergy) {
         for (Animal animal : animalsList) {
             //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
             //        + " is being moved");
-            animal.randomMove();
+            animal.randomMove(moveEnergy);
         }
     }
 
@@ -423,6 +423,13 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         int randomY = random.nextInt(height);
 
         return new Vector2d(randomX, randomY);
+    }
+
+    public void generateAnimalsAtRandomPositions(int numberOfAnimals, int startingEnergy,
+                                                 int lengthOfGenotype, int numberOfGenes) {
+        for(int i = 0; i < numberOfAnimals; i++) {
+            new Animal(this, startingEnergy, lengthOfGenotype, numberOfGenes);
+        }
     }
 
     @Override

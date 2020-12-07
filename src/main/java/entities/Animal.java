@@ -136,13 +136,13 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
      */
     public void move(Direction direction) {
         setPosition(direction.toUnitVector());
-        energy -= 1;
     }
 
 
-    public void randomMove() {
+    public void randomMove(int moveEnergy) {
         orientation = genotype.getRandomDirection();
         move(orientation);
+        energy -= moveEnergy;
     }
 
     /**

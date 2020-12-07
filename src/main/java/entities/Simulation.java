@@ -1,49 +1,68 @@
 package entities;
 
 public class Simulation {
-    private final int startingEnergy;
+    // Simulation parameters
+    private final int startEnergy;
     private final WorldMap map;
-    private final int energyFromPlant;
+    private final int plantEnergy;
+    private final int moveEnergy;
+
+    private boolean isRunning;
+
     private int currentDay;
 
     // TODO OBSŁUGA BŁĘDNYCH PARAMETRÓW
-    public Simulation(int startingEnergy, WorldMap map, int startingNumOfAnimals, int numOfGenes,
-                      int numOfGeneTypes, int energyFromPlant) {
-        this.startingEnergy = startingEnergy;
-        this.map = map;
-        this.energyFromPlant = energyFromPlant;
-        currentDay = 0;
+    public Simulation(int width, int height, int startEnergy, int plantEnergy, int moveEnergy, double jungleRatio) {
+        this.startEnergy = startEnergy;
+        this.map = new WorldMap(width, height, jungleRatio);
+        this.plantEnergy = plantEnergy;
+        this.moveEnergy = moveEnergy;
 
-        for(int i = 0; i < startingNumOfAnimals; i++) {
-            new Animal(map, startingEnergy, numOfGenes, numOfGeneTypes);
-        }
+        isRunning = false;
+
+        currentDay = 0;
     }
 
-    public void runSimulation() {
-        while(map.getNumberOfAnimals() > 0) {
-            System.out.println("Day " + currentDay);
-            System.out.println("Number of animals " + map.getNumberOfAnimals());
+    public void generateAnimalsAtRandomPositions(int numberOfAnimals) {
+        map.generateAnimalsAtRandomPositions(numberOfAnimals, startEnergy, 32, 8);
+    }
 
-            map.removeDeadAnimals();
-            System.out.println("Removed dead animals");
-            map.moveAnimals();
-            System.out.println("Moved animals");
-            map.eatPlants(energyFromPlant);
-            System.out.println("Animals ate plants");
-            map.reproduceAllAnimals(startingEnergy);
-            System.out.println("Animals reproduced");
-            map.generatePlants();
-            System.out.println("Plants generated");
+    public void removeDeadAnimals() {
+        map.removeDeadAnimals();
+    }
 
-            System.out.println(".");
-            System.out.println(".");
-            System.out.println(".");
+    public void moveAnimals() {
+        map.moveAnimals(moveEnergy);
+    }
 
-            currentDay += 1;
+    public void eatPlants() {
+        map.eatPlants(plantEnergy);
+    }
 
-            System.out.println();
-        }
+    public void reproduceAnimals() {
+        map.reproduceAllAnimals(startEnergy);
+    }
 
-        System.out.println("Animals survived " + currentDay + " days");
+    public void generatePlants() {
+        map.generatePlants();
+        currentDay += 1;
+    }
+
+    public int getCurrentDay() {
+        return currentDay;
+    }
+
+    public void runSimulationInConsole() {
+
+    }
+
+    @Override
+    public String toString() {
+        return "Simulation{" +
+                "startEnergy=" + startEnergy +
+                ", map=" + map +
+                ", plantEnergy=" + plantEnergy +
+                ", moveEnergy=" + moveEnergy +
+                '}';
     }
 }

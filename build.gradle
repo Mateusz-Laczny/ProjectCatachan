@@ -6,6 +6,7 @@ plugins {
 
 group 'agh.edu.pl.po.projekt1.ML'
 version '1.0-SNAPSHOT'
+mainClassName = "application.Main"
 
 repositories {
     mavenCentral()
@@ -14,6 +15,7 @@ repositories {
 dependencies {
     testImplementation(platform('org.junit:junit-bom:5.7.0'))
     testImplementation('org.junit.jupiter:junit-jupiter')
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 test {
@@ -25,6 +27,6 @@ test {
 
 javafx {
     version = "15.0.1"
-    modules = [ 'javafx.controls' ]
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.base' ]
 }
 
