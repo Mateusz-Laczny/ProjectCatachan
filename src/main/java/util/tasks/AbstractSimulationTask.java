@@ -9,4 +9,7 @@ public abstract class AbstractSimulationTask extends Task<Void> {
     public AbstractSimulationTask(Simulation simulation) {
         this.simulation = simulation;
     }
+
+    @Override
+    public abstract Void call() throws Exception;
 }

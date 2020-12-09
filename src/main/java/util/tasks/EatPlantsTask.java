@@ -8,7 +8,7 @@ public class EatPlantsTask extends AbstractSimulationTask{
     }
 
     @Override
-    protected Void call() throws Exception {
+    public Void call() throws Exception{
         simulation.eatPlants();
         return null;
     }

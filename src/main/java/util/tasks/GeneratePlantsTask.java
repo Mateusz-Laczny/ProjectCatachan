@@ -8,7 +8,7 @@ public class GeneratePlantsTask extends AbstractSimulationTask{
     }
 
     @Override
-    protected Void call() throws Exception {
+    public Void call() throws Exception {
         simulation.generatePlants();
         return null;
     }

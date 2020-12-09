@@ -208,8 +208,8 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
         // Increasing energy of the strongest animals
         for (Animal strongestAnimal : animalsWithMaxEnergy) {
             strongestAnimal.energy += energyFromPlant / animalsWithMaxEnergy.size();
-            System.out.println("Animal at position " + strongestAnimal.getPosition().toString() + " ate a plant " +
-                    "and gained " + energyFromPlant / animalsWithMaxEnergy.size() + " energy");
+            //System.out.println("Animal at position " + strongestAnimal.getPosition().toString() + " ate a plant " +
+            //        "and gained " + energyFromPlant / animalsWithMaxEnergy.size() + " energy");
         }
     }
 

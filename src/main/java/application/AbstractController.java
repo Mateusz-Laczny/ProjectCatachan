@@ -16,13 +16,13 @@ public abstract class AbstractController {
     }
 
     protected void showAlertBox(String errorLabel) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../../resources/fxml/BasicAlertBox.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BasicAlertBox.fxml"));
         Parent layout;
 
         try {
             layout = loader.load();
             Scene scene = new Scene(layout);
-            scene.getStylesheets().add(getClass().getResource("InputBoxStyle.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/AlertBoxStyle.css").toExternalForm());
             Stage popupStage = new Stage();
 
             BasicAlertBoxController basicAlertBoxController = loader.getController();

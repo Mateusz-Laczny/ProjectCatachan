@@ -12,11 +12,11 @@
             <Font size="22.0" />
          </font>
       </Label>
-      <Label fx:id="errorLabel" layoutX="13.0" layoutY="54.0" prefHeight="30.0" prefWidth="306.0" text="An error occured. Sorry!">
+      <Label fx:id="errorLabel" layoutX="14.0" layoutY="38.0" prefHeight="30.0" prefWidth="306.0" text="An error occured. Sorry!" wrapText="true">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <Button fx:id="okButton" layoutX="118.0" layoutY="96.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="55.0" text="Ok" />
+      <Button fx:id="okButton" layoutX="140.0" layoutY="96.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="55.0" text="Ok" />
    </children>
 </AnchorPane>

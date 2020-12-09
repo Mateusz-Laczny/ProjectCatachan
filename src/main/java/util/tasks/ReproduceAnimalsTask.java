@@ -8,7 +8,7 @@ public class ReproduceAnimalsTask extends AbstractSimulationTask{
     }
 
     @Override
-    protected Void call() throws Exception {
+    public Void call() throws Exception {
         simulation.reproduceAnimals();
         return null;
     }
