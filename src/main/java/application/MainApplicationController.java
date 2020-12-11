@@ -1,5 +1,6 @@
 package application;
 
+import datatypes.Direction;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalStateObserver;
 import entities.Animal;
@@ -23,6 +24,7 @@ import util.tasks.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -44,6 +46,7 @@ public class MainApplicationController extends AbstractController implements Ini
     private Grid grid;
 
     public Label currentStageLabel;
+    public Label statisticsListLabel;
 
     // Main simulation manager
     private Simulation simulationManager;
@@ -77,6 +80,7 @@ public class MainApplicationController extends AbstractController implements Ini
         });
 
         pauseButton.setOnAction(event -> {
+            Cell.canBeClicked = true;
             running = false;
             followButton.setDisable(false);
         });
@@ -111,6 +115,11 @@ public class MainApplicationController extends AbstractController implements Ini
     }
 
     private void runSimulation() {
+        // Disabling the option to highlight cells
+        Cell.canBeClicked = false;
+        // Disabling the follow button
+        followButton.setDisable(true);
+
         Optional<Integer> startingNumberOfAnimalsOptional = loadNumberOfAnimals();
 
         running = true;
@@ -289,11 +298,28 @@ public class MainApplicationController extends AbstractController implements Ini
     }
 
     public void cellHighlighted(Vector2d position) {
+        statisticsList.getItems().clear();
+        statisticsListLabel.setOpacity(0);
 
+        Optional<Animal> animalAtPositionOptional = simulationManager.animalAt(position);
+
+        if(animalAtPositionOptional.isPresent()) {
+            Animal animalAtPosition = animalAtPositionOptional.get();
+
+            Map<Integer, Integer> geneCount = animalAtPosition.getGenesCount();
+
+            for(int i = 0; i < animalAtPosition.getGenotypeLength(); i++) {
+                if(geneCount.containsKey(i)) {
+                    statisticsList.getItems().add("Gene of type " + Direction.intToDirection(i) + ": " +
+                            geneCount.get(i));
+                }
+            }
+        }
     }
 
     public void cellUnHighlighted(Vector2d position) {
-
+        statisticsList.getItems().clear();
+        statisticsListLabel.setOpacity(1);
     }
 
     public boolean isRunning() {

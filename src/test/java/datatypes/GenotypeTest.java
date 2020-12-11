@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import util.IRandomGenerator;
 import util.MockRandom;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +14,7 @@ class GenotypeTest {
         assertDoesNotThrow(() -> new Genotype(32, 8));
         Genotype genotype = new Genotype(32, 8);
 
-        assertEquals(32, genotype.getGenomeLength());
+        assertEquals(32, genotype.getGenotypeLength());
         assertEquals(8, genotype.getGeneTypesNumber());
     }
 

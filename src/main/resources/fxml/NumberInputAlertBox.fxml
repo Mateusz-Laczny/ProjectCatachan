@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="131.0" prefWidth="277.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.NumberInputAlertBoxController">
+<AnchorPane prefHeight="131.0" prefWidth="277.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.NumberInputAlertBoxController">
    <children>
       <Label layoutX="16.0" layoutY="11.0" text="Choose the production index">
          <font>

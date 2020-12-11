@@ -27,6 +27,10 @@ public enum Direction {
         };
     }
 
+    public static Direction intToDirection(int value) {
+        return Direction.values()[value];
+    }
+
     @Override
     public String toString() {
         return switch (this) {

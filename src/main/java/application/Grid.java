@@ -1,8 +1,8 @@
 package application;
 
+import datatypes.Vector2d;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
-
 
 public class Grid extends Pane {
     // Grid dimensions
@@ -29,7 +29,7 @@ public class Grid extends Pane {
      * Add cell to array and to the UI.
      */
     public void add(int column, int row, Image image) {
-        Cell cell = new Cell(column, row, image, this);
+        Cell cell = new Cell(column, row, this);
         cells[row][column] = cell;
 
 
@@ -40,8 +40,10 @@ public class Grid extends Pane {
 
         cell.setLayoutX(x);
         cell.setLayoutY(y);
-        cell.setFitWidth(w);
-        cell.setFitHeight(h);
+        cell.setPrefWidth(w);
+        cell.setPrefHeight(h);
+
+        cell.initializeImage(image);
 
         getChildren().add(cell);
     }
@@ -51,11 +53,11 @@ public class Grid extends Pane {
     }
 
     public void cellHighlighted(Cell cell) {
-
+        mainApplicationController.cellHighlighted(new Vector2d(cell.getColumn(), cell.getRow()));
     }
 
     public void cellUnHighlighted(Cell cell) {
-
+        mainApplicationController.cellUnHighlighted(new Vector2d(cell.getColumn(), cell.getRow()));
     }
 }
 

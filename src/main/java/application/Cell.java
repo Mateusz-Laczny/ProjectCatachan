@@ -2,32 +2,41 @@ package application;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
-public class Cell extends ImageView {
+public class Cell extends StackPane {
     public static boolean canBeClicked = false;
 
     private final int column;
     private final int row;
 
     private final Grid grid;
+    private final ImageView image;
 
-    public Cell(int column, int row, Image image, Grid grid) {
+    public Cell(int column, int row, Grid grid) {
         this.column = column;
         this.row = row;
         this.grid = grid;
-        super.setImage(image);
 
-        getStyleClass().add("cell");
+        // Setting up the image
+        this.image = new ImageView();
 
-        this.setOnMouseClicked(event -> {
+        getStyleClass().add("map-cell");
+
+        this.setOnMousePressed(event -> {
             Cell cell = (Cell) event.getSource();
 
             if(canBeClicked) {
+                System.out.println(event.isPrimaryButtonDown());
+
                 if(event.isPrimaryButtonDown()) {
                     cell.highlight();
+                    grid.cellHighlighted(this);
                 } else if(event.isSecondaryButtonDown()) {
                     cell.unhighlight();
+                    grid.cellUnHighlighted(this);
                 }
             }
         });
@@ -37,22 +46,24 @@ public class Cell extends ImageView {
 
     public void highlight() {
         // ensure the style is only once in the style list
-        getStyleClass().remove("cell-highlight");
+        getStyleClass().remove("map-cell-highlight");
+
+        System.out.println(getStyleClass());
 
         // add style
-        getStyleClass().add("cell-highlight");
+        getStyleClass().add("map-cell-highlight");
     }
 
     public void unhighlight() {
-        getStyleClass().remove("cell-highlight");
+        getStyleClass().remove("map-cell-highlight");
     }
 
     public void hoverHighlight() {
         // ensure the style is only once in the style list
-        getStyleClass().remove("cell-hover-highlight");
+        getStyleClass().remove("map-cell-hover-highlight");
 
         // add style
-        getStyleClass().add("cell-hover-highlight");
+        getStyleClass().add("map-cell-hover-highlight");
     }
 
     public void hoverUnhighlight() {
@@ -69,5 +80,16 @@ public class Cell extends ImageView {
 
     public int getColumn() {
         return column;
+    }
+
+    public void initializeImage(Image image) {
+        this.image.setFitWidth(this.getPrefWidth());
+        this.image.setFitHeight(this.getPrefHeight());
+        this.image.setImage(image);
+        this.getChildren().add(this.image);
+    }
+
+    public void setImage(Image image) {
+        this.image.setImage(image);
     }
 }

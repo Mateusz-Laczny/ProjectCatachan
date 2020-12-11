@@ -36,7 +36,7 @@ public class Genotype {
 
         this.geneTypesNumber = geneTypesNumber;
         genes = new int[lengthOfGenome];
-        createRandomGenome();
+        createRandomGenotype();
     }
 
     /**
@@ -54,14 +54,14 @@ public class Genotype {
         checkParametersCorrectness(firstParentGenotype, secondParentGenotype);
 
         geneTypesNumber = firstParentGenotype.getGeneTypesNumber();
-        genes = new int[firstParentGenotype.getGenomeLength()];
+        genes = new int[firstParentGenotype.getGenotypeLength()];
 
         random = new RealRandom();
 
         if(random.nextInt(2) == 0) {
-            createGenomeFromParents(firstParentGenotype, secondParentGenotype);
+            createGenotypeFromParents(firstParentGenotype, secondParentGenotype);
         } else {
-            createGenomeFromParents(secondParentGenotype, firstParentGenotype);
+            createGenotypeFromParents(secondParentGenotype, firstParentGenotype);
         }
     }
 
@@ -82,14 +82,14 @@ public class Genotype {
         checkParametersCorrectness(firstParentGenotype, secondParentGenotype);
 
         geneTypesNumber = firstParentGenotype.getGeneTypesNumber();
-        genes = new int[firstParentGenotype.getGenomeLength()];
+        genes = new int[firstParentGenotype.getGenotypeLength()];
 
         random = mockupRandom;
 
         if(random.nextInt(2) == 0) {
-            createGenomeFromParents(firstParentGenotype, secondParentGenotype);
+            createGenotypeFromParents(firstParentGenotype, secondParentGenotype);
         } else {
-            createGenomeFromParents(secondParentGenotype, firstParentGenotype);
+            createGenotypeFromParents(secondParentGenotype, firstParentGenotype);
         }
     }
 
@@ -119,13 +119,13 @@ public class Genotype {
 
         this.geneTypesNumber = geneTypesNumber;
         genes = new int[lengthOfGenome];
-        createRandomGenome();
+        createRandomGenotype();
     }
 
     private void checkParametersCorrectness(Genotype firstParentGenotype, Genotype secondParentGenotype)
             throws IllegalArgumentException {
 
-        if(firstParentGenotype.getGenomeLength() != secondParentGenotype.getGenomeLength()) {
+        if(firstParentGenotype.getGenotypeLength() != secondParentGenotype.getGenotypeLength()) {
             throw new IllegalArgumentException("Genomes are not of the same length");
         }
 
@@ -143,7 +143,7 @@ public class Genotype {
      * @param otherParent
      *      Genotype of the other parent
      */
-    private void createGenomeFromParents(Genotype dominatingParent, Genotype otherParent) {
+    private void createGenotypeFromParents(Genotype dominatingParent, Genotype otherParent) {
         int[] cutIndexes = new int[3];
 
         cutIndexes[1] = random.nextInt(genes.length - 2);
@@ -189,7 +189,7 @@ public class Genotype {
         }
 
         // Genome can be out of order after the slicing
-        repairGenome();
+        repairGenotype();
     }
 
     private void copyGenes(Genotype parentGenome, int startIndex, int endIndex) {
@@ -202,8 +202,22 @@ public class Genotype {
         return geneTypesNumber;
     }
 
-    public int getGenomeLength() {
+    public int getGenotypeLength() {
         return genes.length;
+    }
+
+    public Map<Integer, Integer> getGenesCount() {
+        Map<Integer, Integer> geneCount = new HashMap<>();
+
+        for (int i = 0; i < getGenotypeLength(); i++) {
+            if(geneCount.containsKey(genes[i])) {
+                geneCount.replace(genes[i], geneCount.get(genes[i]) + 1);
+            } else {
+                geneCount.put(genes[i], 1);
+            }
+        }
+
+        return geneCount;
     }
 
     // Methods
@@ -215,18 +229,18 @@ public class Genotype {
     }
 
     /**
-     * Returns a random direction based on the genes in the genome
+     * Returns a random direction based on the genes in the genotype
      * @return A Direction enum value
      */
     public Direction getRandomDirection() {
         int randomGene = genes[random.nextInt(genes.length)];
-        return Direction.values()[randomGene];
+        return Direction.intToDirection(randomGene);
     }
 
     /**
      * Alters the genome so that every gene type appears at least once
      */
-    private void repairGenome() {
+    private void repairGenotype() {
         int[] geneTypeCount = new int[geneTypesNumber];
 
         for(int gene : genes) {
@@ -261,11 +275,11 @@ public class Genotype {
         Arrays.sort(genes);
     }
 
-    private void createRandomGenome() {
+    private void createRandomGenotype() {
         for(int i = 0; i < genes.length; i++) {
             genes[i] = random.nextInt(geneTypesNumber);
         }
 
-        repairGenome();
+        repairGenotype();
     }
 }

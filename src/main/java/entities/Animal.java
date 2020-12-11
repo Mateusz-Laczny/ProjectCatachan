@@ -115,6 +115,14 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
         return energy;
     }
 
+    public Map<Integer, Integer> getGenesCount() {
+        return genotype.getGenesCount();
+    }
+
+    public int getGenotypeLength() {
+        return genotype.getGenotypeLength();
+    }
+
     @Override
     public String toString() {
 //        return "Animal{" +
