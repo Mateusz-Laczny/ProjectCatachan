@@ -21,6 +21,11 @@ public class Main extends Application {
         MainApplicationController mainApplicationController = loader.getController();
         mainApplicationController.setMainApp(this);
 
+        // We call the close method on the controller to kill the running thread
+        stage.setOnCloseRequest(event -> {
+            mainApplicationController.close();
+            stage.close();
+        });
 
         stage.setTitle("CatachanSimulator 1.0");
         stage.setScene(new Scene(root));

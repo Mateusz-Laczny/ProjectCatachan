@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -34,10 +35,13 @@ public class MainApplicationController extends AbstractController implements Ini
     public Button addMapButton;
     public Button showStatisticsButton;
     public Button loadButton;
+    public Button followButton;
 
     public Pane mapPane;
+    public ListView<String> statisticsList;
     // Map cells
     ImageView[][] mapCells;
+    private Grid grid;
 
     public Label currentStageLabel;
 
@@ -74,14 +78,18 @@ public class MainApplicationController extends AbstractController implements Ini
 
         pauseButton.setOnAction(event -> {
             running = false;
+            followButton.setDisable(false);
         });
 
         resumeButton.setOnAction(event -> {
             running = true;
         });
 
+        // TODO
         stopButton.setOnAction(event -> {
-            stopSimulation();
+            if(taskThread != null) {
+                taskThread.interrupt();
+            }
         });
 
         addMapButton.setOnAction(event -> {
@@ -95,12 +103,60 @@ public class MainApplicationController extends AbstractController implements Ini
         loadButton.setOnAction(event -> {
             load();
         });
+
+        // TODO
+        followButton.setOnAction(event -> {
+
+        });
     }
 
     private void runSimulation() {
         Optional<Integer> startingNumberOfAnimalsOptional = loadNumberOfAnimals();
 
         running = true;
+
+        taskThread = new Thread(new Runnable() {
+            public void run() {
+                while(!Thread.currentThread().isInterrupted()){
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (running) {
+                                try {
+                                    removeDeadTask.call();
+                                    refreshMap();
+
+                                    moveTask.call();
+                                    refreshMap();
+
+                                    eatTask.call();
+                                    refreshMap();
+
+                                    reproduceTask.call();
+                                    refreshMap();
+
+                                    generatePlantsTask.call();
+                                    refreshMap();
+
+                                    if(simulationManager.getNumberOfAnimals() == 0) {
+                                        System.out.println("Ping");
+                                        running = false;
+                                    }
+                                } catch (Exception exception) {
+                                    exception.printStackTrace();
+                                    showAlertBox("Ups! Something went wrong " + exception.getMessage());
+                                }
+                            }
+                        }
+                    });
+                    try{
+                        Thread.sleep(300);
+                    } catch(InterruptedException e){
+                        break;
+                    }
+                }
+            }
+        });
 
         if(startingNumberOfAnimalsOptional.isPresent()) {
             int startingNumberOfAnimals = startingNumberOfAnimalsOptional.get();
@@ -110,14 +166,6 @@ public class MainApplicationController extends AbstractController implements Ini
                 taskThread.start();
             }
         }
-    }
-
-    private void pauseSimulation() {
-        running = false;
-    }
-
-    private void stopSimulation() {
-        mapPane.setStyle("-fx-background-color: blue");
     }
 
     private Optional<Integer> loadNumberOfAnimals() {
@@ -171,81 +219,26 @@ public class MainApplicationController extends AbstractController implements Ini
             reproduceTask = new ReproduceAnimalsTask(simulationManager);
             generatePlantsTask = new GeneratePlantsTask(simulationManager);
 
-            removeDeadTask.setOnRunning(event -> {
+            removeDeadTask.setOnScheduled(event -> {
                 setStageLabelText("Removing dead animals");
             });
 
-            moveTask.setOnRunning(event -> {
+            moveTask.setOnScheduled(event -> {
                 setStageLabelText("Moving animals");
             });
 
-            eatTask.setOnRunning(event -> {
+            eatTask.setOnScheduled(event -> {
                 setStageLabelText("Eating plants");
             });
 
-            reproduceTask.setOnRunning(event -> {
+            reproduceTask.setOnScheduled(event -> {
                 setStageLabelText("Reproducing");
             });
 
-            generatePlantsTask.setOnRunning(event -> {
+            generatePlantsTask.setOnScheduled(event -> {
                 setStageLabelText("Generating plants");
             });
 
-            taskThread = new Thread(new Runnable() {
-                public void pause() {
-                    try {
-                        taskThread.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                public void resume() {
-                    taskThread.notify();
-                }
-
-                public void run() {
-                    while(!Thread.currentThread().isInterrupted()){
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (running) {
-                                    try {
-                                        removeDeadTask.call();
-                                        refreshMap();
-
-                                        moveTask.call();
-                                        refreshMap();
-
-                                        eatTask.call();
-                                        refreshMap();
-
-                                        reproduceTask.call();
-                                        refreshMap();
-
-                                        generatePlantsTask.call();
-                                        refreshMap();
-
-                                        if(simulationManager.getNumberOfAnimals() == 0) {
-                                            System.out.println("Ping");
-                                            running = false;
-                                        }
-                                    } catch (Exception exception) {
-                                        exception.printStackTrace();
-                                        showAlertBox("Ups! Something went wrong " + exception.getMessage());
-                                    }
-                                }
-                            }
-                        });
-                        try{
-                            Thread.sleep(300);
-                        } catch(InterruptedException e){
-                            //running = false;
-                            break;
-                        }
-                    }
-                }
-            });
 
             setMapPane();
             showAlertBox("Parameters loaded");
@@ -256,19 +249,17 @@ public class MainApplicationController extends AbstractController implements Ini
     }
 
     private void refreshMap() {
-        if(mapCells == null) {
-            showAlertBox("Map isn't set, you must have done something wrong");
-        } else {
+        if(grid != null) {
             for(int i = 0; i < parameters.height; i++) {
-                for (int j = 0; j < parameters.width; j++) {
+                for(int j = 0; j < parameters.width; j++) {
                     Vector2d currentPosition = new Vector2d(j, i);
 
                     if (simulationManager.animalAt(currentPosition).isPresent()) {
-                        mapCells[j][i].setImage(animal);
+                        grid.getCell(j, i).setImage(animal);
                     } else if(simulationManager.plantAt(currentPosition).isPresent()) {
-                        mapCells[j][i].setImage(plant);
+                        grid.getCell(j, i).setImage(plant);
                     } else {
-                        mapCells[j][i].setImage(background);
+                        grid.getCell(j, i).setImage(background);
                     }
                 }
             }
@@ -281,90 +272,39 @@ public class MainApplicationController extends AbstractController implements Ini
 
     // TODO
     private void setMapPane() {
-//        mapGridPane.getChildren().clear();
-//        mapGridPane.setGridLinesVisible(true);
-//
-//        for(int i = 0; i < parameters.width; i++) {
-//            ColumnConstraints column = new ColumnConstraints();
-//            column.setPercentWidth((double) 100 / parameters.width);
-//            column.fillWidthProperty().setValue(true);
-//            mapGridPane.getColumnConstraints().add(column);
-//        }
-//
-//        for(int i = 0; i < parameters.height; i++) {
-//            RowConstraints row = new RowConstraints();
-//            row.setPercentHeight((double) 100 / parameters.height);
-//            row.fillHeightProperty().setValue(true);
-//            mapGridPane.getRowConstraints().add(row);
-//        }
-//
-//        Image background = new Image(getClass().getResource("/images/dirt.jpg").toExternalForm());
-//
-//        for(int i = 0; i < parameters.height; i++) {
-//            for(int j = 0; j < parameters.width; j++) {
-//                ImageView cell = new ImageView();
-//                cell.setImage(background);
-//
-//                System.out.println(mapPane.getWidth() / parameters.width);
-//                System.out.println(mapPane.getHeight() / parameters.height);
-//
-//                cell.setFitWidth(mapGridPane.getWidth() / parameters.width);
-//                cell.setFitHeight(mapGridPane.getHeight() / parameters.height);
-//
-//                mapGridPane.add(cell, i, j);
-//            }
-//        }
-
         mapPane.getChildren().clear();
 
-        GridPane mapGrid = new GridPane();
-        mapPane.getChildren().add(mapGrid);
-        mapGrid.setHgap(0);
-        mapGrid.setVgap(0);
-        mapGrid.setGridLinesVisible(true);
+        Image background = new Image(getClass().getResource("/images/dirt.jpg").toExternalForm());
 
-        mapCells = new ImageView[parameters.width][parameters.height];
+        grid = new Grid(parameters.height, parameters.width, mapPane.getWidth(),
+                mapPane.getHeight(), this);
 
         for(int i = 0; i < parameters.height; i++) {
             for(int j = 0; j < parameters.width; j++) {
-                //mapGrid.add(new ImageView(background), i, j);
-                ImageView cell = new ImageView();
-                cell.setCache(true);
-                cell.setImage(background);
-
-                Pane pane = new Pane();
-                pane.getChildren().add(cell);
-                pane.setPrefSize(mapPane.getWidth() / parameters.width,
-                        mapPane.getHeight() / parameters.height);
-
-
-                cell.fitWidthProperty().bind(pane.widthProperty());
-                cell.fitHeightProperty().bind(pane.heightProperty());
-
-                mapCells[j][i] = cell;
-//
-//                cell.setFitWidth(mapGrid.getColumnConstraints().get(i).getPercentWidth() * mapPane.getWidth() / 100);
-//                cell.setFitHeight(mapGrid.getRowConstraints().get(j).getPercentHeight() * mapPane.getHeight() / 100);
-
-//                pane.maxWidthProperty().bind(mapGrid.);
-                mapGrid.add(pane, i, j);
+                grid.add(j, i, background);
             }
         }
 
-        //mapGrid.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        mapPane.getChildren().add(grid);
+    }
 
-        for(int i = 0; i < parameters.width; i++) {
-            ColumnConstraints column = new ColumnConstraints();
-            column.setPercentWidth((double) 100 / parameters.width);
-            //column.fillWidthProperty().setValue(true);
-            mapGrid.getColumnConstraints().add(column);
-        }
+    public void cellHighlighted(Vector2d position) {
 
-        for(int i = 0; i < parameters.height; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setPercentHeight((double) 100 / parameters.height);
-            //row.fillHeightProperty().setValue(true);
-            mapGrid.getRowConstraints().add(row);
+    }
+
+    public void cellUnHighlighted(Vector2d position) {
+
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void close() {
+        if(taskThread != null) {
+            if(taskThread.isAlive()) {
+                taskThread.interrupt();
+            }
         }
     }
 
