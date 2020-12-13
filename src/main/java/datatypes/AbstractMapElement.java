@@ -1,5 +1,7 @@
 package datatypes;
 
+import entities.IMapEntity;
+
 public class AbstractMapElement implements IMapEntity {
     protected Vector2d position;
     protected final boolean blocksMovement;

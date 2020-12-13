@@ -1,4 +1,6 @@
-package datatypes;
+package entities;
+
+import datatypes.Vector2d;
 
 public interface IMapEntity {
     /**

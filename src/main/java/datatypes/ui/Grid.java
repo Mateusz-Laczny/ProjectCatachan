@@ -1,5 +1,6 @@
-package application;
+package datatypes.ui;
 
+import application.controllers.MainApplicationController;
 import datatypes.Vector2d;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;

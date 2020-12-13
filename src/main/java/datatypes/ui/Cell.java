@@ -1,9 +1,7 @@
-package application;
+package datatypes.ui;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 public class Cell extends StackPane {
@@ -12,13 +10,11 @@ public class Cell extends StackPane {
     private final int column;
     private final int row;
 
-    private final Grid grid;
     private final ImageView image;
 
     public Cell(int column, int row, Grid grid) {
         this.column = column;
         this.row = row;
-        this.grid = grid;
 
         // Setting up the image
         this.image = new ImageView();
@@ -29,8 +25,6 @@ public class Cell extends StackPane {
             Cell cell = (Cell) event.getSource();
 
             if(canBeClicked) {
-                System.out.println(event.isPrimaryButtonDown());
-
                 if(event.isPrimaryButtonDown()) {
                     cell.highlight();
                     grid.cellHighlighted(this);
@@ -47,8 +41,6 @@ public class Cell extends StackPane {
     public void highlight() {
         // ensure the style is only once in the style list
         getStyleClass().remove("map-cell-highlight");
-
-        System.out.println(getStyleClass());
 
         // add style
         getStyleClass().add("map-cell-highlight");

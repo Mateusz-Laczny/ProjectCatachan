@@ -1,19 +1,20 @@
 package entities;
 
 import datatypes.Vector2d;
+import datatypes.observer.IAnimalStateObserver;
 
 import java.util.Optional;
 
-public class Simulation {
+public class Simulation implements IAnimalStateObserver {
     // Simulation parameters
     private final int startEnergy;
     private final WorldMap map;
     private final int plantEnergy;
     private final int moveEnergy;
 
-    private boolean isRunning;
-
     private int currentDay;
+
+    private Animal followedAnimal;
 
     // TODO OBSŁUGA BŁĘDNYCH PARAMETRÓW
     public Simulation(int width, int height, int startEnergy, int plantEnergy, int moveEnergy, double jungleRatio) {
@@ -21,8 +22,6 @@ public class Simulation {
         this.map = new WorldMap(width, height, jungleRatio);
         this.plantEnergy = plantEnergy;
         this.moveEnergy = moveEnergy;
-
-        isRunning = false;
 
         currentDay = 0;
     }
@@ -73,7 +72,10 @@ public class Simulation {
         return currentDay;
     }
 
-
+    public void setFollowedAnimal(Animal animal) {
+        followedAnimal = animal;
+        System.out.println("Animal is being followed");
+    }
 
     @Override
     public String toString() {
@@ -83,5 +85,14 @@ public class Simulation {
                 ", plantEnergy=" + plantEnergy +
                 ", moveEnergy=" + moveEnergy +
                 '}';
+    }
+
+    @Override
+    public void animalDied(Animal deadAnimal) {
+        System.out.println("Animal died method called");
+
+        if(followedAnimal != null && followedAnimal.equals(deadAnimal)) {
+            System.out.println("Followed animal died");
+        }
     }
 }

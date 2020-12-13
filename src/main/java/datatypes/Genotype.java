@@ -1,7 +1,7 @@
 package datatypes;
 
-import util.IRandomGenerator;
-import util.RealRandom;
+import util.randomMock.IRandomGenerator;
+import util.randomMock.RealRandom;
 
 import java.util.*;
 

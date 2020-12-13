@@ -1,8 +1,9 @@
-package application;
+package application.controllers;
 
+import datatypes.ui.Cell;
+import datatypes.ui.Grid;
 import datatypes.Direction;
 import datatypes.Vector2d;
-import datatypes.observer.IAnimalStateObserver;
 import entities.Animal;
 import entities.Simulation;
 import javafx.application.Platform;
@@ -14,7 +15,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class MainApplicationController extends AbstractController implements Initializable, IAnimalStateObserver {
+public class MainApplicationController extends AbstractController implements Initializable {
     // Buttons on the main window
     public Button startButton;
     public Button pauseButton;
@@ -41,8 +41,7 @@ public class MainApplicationController extends AbstractController implements Ini
 
     public Pane mapPane;
     public ListView<String> statisticsList;
-    // Map cells
-    ImageView[][] mapCells;
+    // Map Grid
     private Grid grid;
 
     public Label currentStageLabel;
@@ -69,15 +68,18 @@ public class MainApplicationController extends AbstractController implements Ini
     Image animal = new Image(getClass().getResource("/images/sheepWithoutGrass.jpg").toExternalForm());
     Image plant = new Image(getClass().getResource("/images/grass.png").toExternalForm());
 
+    // Followed animal
+    private Animal followedAnimal;
+    // Currently selected Animal
+    private Animal selectedAnimal;
+
     private boolean running;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         parametersParser = new ParametersParser();
 
-        startButton.setOnAction(event -> {
-            runSimulation();
-        });
+        startButton.setOnAction(event -> runSimulation());
 
         pauseButton.setOnAction(event -> {
             Cell.canBeClicked = true;
@@ -86,10 +88,10 @@ public class MainApplicationController extends AbstractController implements Ini
         });
 
         resumeButton.setOnAction(event -> {
+            followButton.setDisable(true);
             running = true;
         });
 
-        // TODO
         stopButton.setOnAction(event -> {
             if(taskThread != null) {
                 taskThread.interrupt();
@@ -108,9 +110,11 @@ public class MainApplicationController extends AbstractController implements Ini
             load();
         });
 
-        // TODO
         followButton.setOnAction(event -> {
-
+            if(selectedAnimal != null) {
+                followedAnimal = selectedAnimal;
+                simulationManager.setFollowedAnimal(followedAnimal);
+            }
         });
     }
 
@@ -120,64 +124,69 @@ public class MainApplicationController extends AbstractController implements Ini
         // Disabling the follow button
         followButton.setDisable(true);
 
-        Optional<Integer> startingNumberOfAnimalsOptional = loadNumberOfAnimals();
+        if(parameters != null) {
+            Optional<Integer> startingNumberOfAnimalsOptional = loadNumber("Choose the starting number of animals");
 
-        running = true;
+            running = true;
+            simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
+                    parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio);
 
-        taskThread = new Thread(new Runnable() {
-            public void run() {
-                while(!Thread.currentThread().isInterrupted()){
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (running) {
-                                try {
-                                    removeDeadTask.call();
-                                    refreshMap();
+            taskThread = new Thread(new Runnable() {
+                public void run() {
+                    while(!Thread.currentThread().isInterrupted()){
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (running) {
+                                    try {
+                                        simulationManager.removeDeadAnimals();
+                                        refreshMap();
 
-                                    moveTask.call();
-                                    refreshMap();
+                                        simulationManager.moveAnimals();
+                                        refreshMap();
 
-                                    eatTask.call();
-                                    refreshMap();
+                                        simulationManager.eatPlants();
+                                        refreshMap();
 
-                                    reproduceTask.call();
-                                    refreshMap();
+                                        simulationManager.reproduceAnimals();
+                                        refreshMap();
 
-                                    generatePlantsTask.call();
-                                    refreshMap();
+                                        simulationManager.generatePlants();
+                                        refreshMap();
 
-                                    if(simulationManager.getNumberOfAnimals() == 0) {
-                                        System.out.println("Ping");
-                                        running = false;
+                                        if(simulationManager.getNumberOfAnimals() == 0) {
+                                            running = false;
+                                        }
+                                    } catch (Exception exception) {
+                                        exception.printStackTrace();
+                                        showAlertBox("Ups! Something went wrong " + exception.getMessage());
                                     }
-                                } catch (Exception exception) {
-                                    exception.printStackTrace();
-                                    showAlertBox("Ups! Something went wrong " + exception.getMessage());
                                 }
                             }
+                        });
+
+                        try{
+                            Thread.sleep(300);
+                        } catch(InterruptedException e){
+                            break;
                         }
-                    });
-                    try{
-                        Thread.sleep(300);
-                    } catch(InterruptedException e){
-                        break;
                     }
                 }
-            }
-        });
+            });
 
-        if(startingNumberOfAnimalsOptional.isPresent()) {
-            int startingNumberOfAnimals = startingNumberOfAnimalsOptional.get();
-            if (simulationManager != null) {
-                simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals);
-                refreshMap();
-                taskThread.start();
+            if(startingNumberOfAnimalsOptional.isPresent()) {
+                int startingNumberOfAnimals = startingNumberOfAnimalsOptional.get();
+                if (simulationManager != null) {
+                    simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals);
+                    refreshMap();
+                    taskThread.start();
+                }
             }
         }
+
     }
 
-    private Optional<Integer> loadNumberOfAnimals() {
+    private Optional<Integer> loadNumber(String title) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/NumberInputAlertBox.fxml"));
         Parent layout;
 
@@ -190,6 +199,7 @@ public class MainApplicationController extends AbstractController implements Ini
             Stage popupStage = new Stage();
 
             NumberInputAlertBoxController numberInputAlertBoxController = loader.getController();
+            numberInputAlertBoxController.setTitleLabel(title);
             numberInputAlertBoxController.setStage(popupStage);
 
             if(this.main!=null) {
@@ -222,33 +232,6 @@ public class MainApplicationController extends AbstractController implements Ini
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
                     parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio);
 
-            removeDeadTask = new RemoveDeadAnimalsTask(simulationManager);
-            moveTask = new MoveAnimalsTask(simulationManager);
-            eatTask = new EatPlantsTask(simulationManager);
-            reproduceTask = new ReproduceAnimalsTask(simulationManager);
-            generatePlantsTask = new GeneratePlantsTask(simulationManager);
-
-            removeDeadTask.setOnScheduled(event -> {
-                setStageLabelText("Removing dead animals");
-            });
-
-            moveTask.setOnScheduled(event -> {
-                setStageLabelText("Moving animals");
-            });
-
-            eatTask.setOnScheduled(event -> {
-                setStageLabelText("Eating plants");
-            });
-
-            reproduceTask.setOnScheduled(event -> {
-                setStageLabelText("Reproducing");
-            });
-
-            generatePlantsTask.setOnScheduled(event -> {
-                setStageLabelText("Generating plants");
-            });
-
-
             setMapPane();
             showAlertBox("Parameters loaded");
         } catch (IOException e) {
@@ -279,7 +262,6 @@ public class MainApplicationController extends AbstractController implements Ini
         currentStageLabel.setText(text);
     }
 
-    // TODO
     private void setMapPane() {
         mapPane.getChildren().clear();
 
@@ -305,6 +287,7 @@ public class MainApplicationController extends AbstractController implements Ini
 
         if(animalAtPositionOptional.isPresent()) {
             Animal animalAtPosition = animalAtPositionOptional.get();
+            selectedAnimal = animalAtPosition;
 
             Map<Integer, Integer> geneCount = animalAtPosition.getGenesCount();
 
@@ -332,15 +315,5 @@ public class MainApplicationController extends AbstractController implements Ini
                 taskThread.interrupt();
             }
         }
-    }
-
-    @Override
-    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
-
-    }
-
-    @Override
-    public void animalDied(Animal deadAnimal) {
-
     }
 }

@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="777.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainApplicationController">
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="777.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.MainApplicationController">
    <right>
       <AnchorPane prefHeight="777.0" prefWidth="246.0">
          <children>
@@ -39,9 +39,9 @@
                   <Font size="32.0" />
                </font>
             </Label>
-            <ListView fx:id="statisticsList" layoutX="33.0" layoutY="417.0" prefHeight="240.0" prefWidth="200.0" />
-            <Button fx:id="followButton" disable="true" layoutX="103.0" layoutY="680.0" mnemonicParsing="false" text="Follow" />
-            <Label fx:id="statisticsListLabel" layoutX="73.0" layoutY="499.0" prefHeight="76.0" prefWidth="116.0" text="Select an animal to viev it's genotype" textAlignment="CENTER" wrapText="true">
+            <ListView fx:id="statisticsList" layoutX="33.0" layoutY="417.0" prefHeight="223.0" prefWidth="200.0" />
+            <Button fx:id="followButton" disable="true" layoutX="103.0" layoutY="652.0" mnemonicParsing="false" text="Follow" />
+            <Label fx:id="statisticsListLabel" layoutX="72.0" layoutY="499.0" prefHeight="76.0" prefWidth="124.0" text="Select an animal to view it's genotype" textAlignment="CENTER" wrapText="true">
                <font>
                   <Font size="16.0" />
                </font>

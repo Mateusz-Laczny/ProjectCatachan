@@ -1,0 +1,7 @@
+.map-cell-highlight {
+    -fx-padding: 3;
+    -fx-background-color:derive(red, 0.3);
+}
+.map-cell-hover-highlight {
+    -fx-background-color:derive(green,0.7);
+}

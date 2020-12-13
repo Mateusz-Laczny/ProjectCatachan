@@ -1,4 +1,4 @@
-package util;
+package util.randomMock;
 
 import java.util.Random;
 

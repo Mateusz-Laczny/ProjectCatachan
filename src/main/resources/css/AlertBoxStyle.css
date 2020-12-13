@@ -1,0 +1,20 @@
+.root {
+     -fx-background-color: #545454;
+}
+
+.button {
+    -fx-background-color: #9f0b0b;
+    -fx-background-insets: 0,1,2,3;
+    -fx-background-radius: 3,2,2,2;
+    -fx-text-fill: #302f2f;
+    -fx-effect: dropshadow( gaussian , #000000 , 0,0,0,1 );
+}
+
+.button Text {
+  -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.9) , 1, 0.0 , 0 , 1 );
+}
+
+.label {
+    -fx-text-fill: #b8b4b4;
+    -fx-font-family: "Fira Sans Light";
+}

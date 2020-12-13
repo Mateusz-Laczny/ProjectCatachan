@@ -1,5 +1,6 @@
-package application;
+package application.controllers;
 
+import application.controllers.AbstractController;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;

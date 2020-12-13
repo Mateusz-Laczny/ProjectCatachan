@@ -1,16 +1,16 @@
 package entities;
 
 import datatypes.Vector2d;
+import datatypes.observer.IAnimalPositionObserver;
 import datatypes.observer.IAnimalStateObserver;
 import datatypes.observer.IPlantStateObserver;
-import util.IRandomGenerator;
-import util.RealRandom;
+import util.randomMock.IRandomGenerator;
+import util.randomMock.RealRandom;
 
 import java.util.*;
 
 
-//TODO
-public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
+public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, IPlantStateObserver {
     // Map dimensions
     private final int width;
     private final int height;
@@ -164,6 +164,10 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         return numberOfAnimals;
     }
 
+    public Iterator<Animal> getAnimalListIterator() {
+        return animalsList.iterator();
+    }
+
     /**
      * Returns plant at a given position, or an empty Optional object if the position has no plants
      * @param position
@@ -241,6 +245,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         }
     }
 
+    // TODO WYRZUCIĆ
     /**
      * Generates one plant in the steppe and one plant in the jungle.
      * If there are no available positions, does nothing.
@@ -267,6 +272,8 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         }
     }
 
+
+    // TODO WYRZUCIĆ
     public void eatPlants(int energyFromPlant) {
         List<Plant> plantsToRemove = new LinkedList<>();
 
@@ -284,6 +291,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         }
     }
 
+    //TODO WYRZUCIĆ
     /**
      * Checks energy of every animal on the map.
      * If it's bellow or equal to 0, calls the die method on that animal
@@ -300,6 +308,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         removeAllFromBuffer();
     }
 
+    // TODO WYRZUCIĆ
     /**
      * Reproduces all capable pairs of animals on tha map
      *
@@ -317,6 +326,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         }
     }
 
+    // TODO WYRZUCIĆ
     /**
      * Moves all animals one tile in the random direction, according to the animal's genome
      */
@@ -333,6 +343,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
             placeAt(animal, animal.getPosition());
             animalsList.add(animal);
             animal.addStateObserver(this);
+            animal.addPositionObserver(this);
             removeFromPossiblePositionsForPlants(animal.getPosition());
         }
 
@@ -425,6 +436,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         return new Vector2d(randomX, randomY);
     }
 
+    // TODO WYRZUCIĆ
     public void generateAnimalsAtRandomPositions(int numberOfAnimals, int startingEnergy,
                                                  int lengthOfGenotype, int numberOfGenes) {
         for(int i = 0; i < numberOfAnimals; i++) {
@@ -463,6 +475,7 @@ public class WorldMap implements IAnimalStateObserver, IPlantStateObserver {
         updatePositionStatusForPlants(eatenPlant.getPosition());
     }
 
+    // TODO WYRZUCIĆ
     /**
      * Checks whether the given position is not occupied by any plant or animal. If it's not,
      * adds the position to the corresponding free positions list.

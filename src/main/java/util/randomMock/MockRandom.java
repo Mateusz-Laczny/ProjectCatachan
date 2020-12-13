@@ -1,6 +1,5 @@
-package util;
+package util.randomMock;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class MockRandom implements IRandomGenerator{

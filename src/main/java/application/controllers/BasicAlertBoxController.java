@@ -1,4 +1,4 @@
-package application;
+package application.controllers;
 
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;

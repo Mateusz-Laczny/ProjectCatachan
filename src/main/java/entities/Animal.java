@@ -4,19 +4,21 @@ import datatypes.AbstractMapElement;
 import datatypes.Direction;
 import datatypes.Genotype;
 import datatypes.Vector2d;
+import datatypes.observer.IAnimalPositionObserver;
+import datatypes.observer.IAnimalPositionPublisher;
 import datatypes.observer.IAnimalStateObserver;
 import datatypes.observer.IAnimalStatePublisher;
-import util.IRandomGenerator;
+import util.randomMock.IRandomGenerator;
 
 import java.util.*;
 
-//TODO
-public class Animal extends AbstractMapElement implements IAnimalStatePublisher {
+public class Animal extends AbstractMapElement implements IAnimalStatePublisher, IAnimalPositionPublisher {
     private Direction orientation;
     private final WorldMap map;
     private final Genotype genotype;
     private int energy;
     private final Set<IAnimalStateObserver> stateObservers;
+    private final Set<IAnimalPositionObserver> positionObservers;
 
     /**
      * Constructor for an animal with defined attributes and a random orientation
@@ -43,6 +45,7 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
         energy = startingEnergy;
 
         stateObservers = new HashSet<>();
+        positionObservers = new HashSet<>();
 
         this.map = map;
         map.place(this);
@@ -178,7 +181,7 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
         }
 
         newPosition = new Vector2d(newPositionX, newPositionY);
-        for(IAnimalStateObserver observer : stateObservers) {
+        for(IAnimalPositionObserver observer : positionObservers) {
             observer.positionChanged(this, oldPosition, newPosition);
         }
         position = newPosition;
@@ -323,5 +326,15 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher 
     @Override
     public void removeStateObserver(IAnimalStateObserver observer) {
         stateObservers.remove(observer);
+    }
+
+    @Override
+    public void addPositionObserver(IAnimalPositionObserver observer) {
+        positionObservers.add(observer);
+    }
+
+    @Override
+    public void removePositionObserver(IAnimalPositionObserver observer) {
+        positionObservers.remove(observer);
     }
 }

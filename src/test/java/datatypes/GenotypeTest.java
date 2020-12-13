@@ -1,8 +1,8 @@
 package datatypes;
 
 import org.junit.jupiter.api.Test;
-import util.IRandomGenerator;
-import util.MockRandom;
+import util.randomMock.IRandomGenerator;
+import util.randomMock.MockRandom;
 
 import java.util.List;
 
