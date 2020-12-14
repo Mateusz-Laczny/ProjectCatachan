@@ -66,6 +66,7 @@ public class MainApplicationController extends AbstractController implements Ini
     // Map images
     Image background = new Image(getClass().getResource("/images/dirt.jpg").toExternalForm());
     Image animal = new Image(getClass().getResource("/images/sheepWithoutGrass.jpg").toExternalForm());
+    Image animalFollowed = new Image(getClass().getResource("/images/followedAnimal.png").toExternalForm());
     Image plant = new Image(getClass().getResource("/images/grass.png").toExternalForm());
 
     // Followed animal
@@ -166,7 +167,7 @@ public class MainApplicationController extends AbstractController implements Ini
                         });
 
                         try{
-                            Thread.sleep(300);
+                            Thread.sleep(200);
                         } catch(InterruptedException e){
                             break;
                         }
@@ -177,7 +178,8 @@ public class MainApplicationController extends AbstractController implements Ini
             if(startingNumberOfAnimalsOptional.isPresent()) {
                 int startingNumberOfAnimals = startingNumberOfAnimalsOptional.get();
                 if (simulationManager != null) {
-                    simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals);
+                    simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals,
+                            32, 8);
                     refreshMap();
                     taskThread.start();
                 }
@@ -246,8 +248,14 @@ public class MainApplicationController extends AbstractController implements Ini
                 for(int j = 0; j < parameters.width; j++) {
                     Vector2d currentPosition = new Vector2d(j, i);
 
-                    if (simulationManager.animalAt(currentPosition).isPresent()) {
-                        grid.getCell(j, i).setImage(animal);
+                    Optional<Animal> animalAtPosition = simulationManager.animalAt(currentPosition);
+
+                    if (animalAtPosition.isPresent()) {
+                        if(animalAtPosition.get().equals(simulationManager.getFollowedAnimal())) {
+                            grid.getCell(j, i).setImage(animalFollowed);
+                        } else {
+                            grid.getCell(j, i).setImage(animal);
+                        }
                     } else if(simulationManager.plantAt(currentPosition).isPresent()) {
                         grid.getCell(j, i).setImage(plant);
                     } else {

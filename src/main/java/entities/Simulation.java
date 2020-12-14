@@ -1,9 +1,11 @@
 package entities;
 
+import datatypes.Genotype;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalStateObserver;
+import managers.StatisticsManager;
 
-import java.util.Optional;
+import java.util.*;
 
 public class Simulation implements IAnimalStateObserver {
     // Simulation parameters
@@ -12,9 +14,9 @@ public class Simulation implements IAnimalStateObserver {
     private final int plantEnergy;
     private final int moveEnergy;
 
-    private int currentDay;
+    private final List<Animal> deadAnimalsBuffer;
 
-    private Animal followedAnimal;
+    private final StatisticsManager statisticsManager;
 
     // TODO OBSŁUGA BŁĘDNYCH PARAMETRÓW
     public Simulation(int width, int height, int startEnergy, int plantEnergy, int moveEnergy, double jungleRatio) {
@@ -23,38 +25,21 @@ public class Simulation implements IAnimalStateObserver {
         this.plantEnergy = plantEnergy;
         this.moveEnergy = moveEnergy;
 
-        currentDay = 0;
+        statisticsManager = new StatisticsManager();
+        deadAnimalsBuffer = new LinkedList<>();
     }
 
-    public void generateAnimalsAtRandomPositions(int numberOfAnimals) {
-        map.generateAnimalsAtRandomPositions(numberOfAnimals, startEnergy, 32, 8);
+    public Simulation(WorldMap map, int startEnergy, int plantEnergy, int moveEnergy) {
+        this.startEnergy = startEnergy;
+        this.map = map;
+        this.plantEnergy = plantEnergy;
+        this.moveEnergy = moveEnergy;
+
+        statisticsManager = new StatisticsManager();
+        deadAnimalsBuffer = new LinkedList<>();
     }
 
-    public void removeDeadAnimals() {
-        map.removeDeadAnimals();
-        //System.out.println("Removed dead animals");
-    }
-
-    public void moveAnimals() {
-        map.moveAnimals(moveEnergy);
-        //System.out.println("Moved Animals");
-    }
-
-    public void eatPlants() {
-        map.eatPlants(plantEnergy);
-        //System.out.println("Animals ate plants");
-    }
-
-    public void reproduceAnimals() {
-        map.reproduceAllAnimals(startEnergy);
-        //System.out.println("Animals reproduced");
-    }
-
-    public void generatePlants() {
-        map.generatePlants();
-        //System.out.println("Plants generated");
-        currentDay += 1;
-    }
+    // Accessors
 
     public Optional<Animal> animalAt(Vector2d position) {
         return map.animalAt(position);
@@ -68,13 +53,8 @@ public class Simulation implements IAnimalStateObserver {
         return map.getNumberOfAnimals();
     }
 
-    public int getCurrentDay() {
-        return currentDay;
-    }
-
-    public void setFollowedAnimal(Animal animal) {
-        followedAnimal = animal;
-        System.out.println("Animal is being followed");
+    public Animal getFollowedAnimal() {
+        return statisticsManager.getFollowedAnimal();
     }
 
     @Override
@@ -87,12 +67,108 @@ public class Simulation implements IAnimalStateObserver {
                 '}';
     }
 
+    // Mutators
+
+    public void setFollowedAnimal(Animal animal) {
+        statisticsManager.setFollowedAnimal(animal);
+        System.out.println("Animal is being followed");
+    }
+
+
+    public void generateAnimalsAtRandomPositions(int numberOfAnimals, int lengthOfGenome, int numberOfGenes) {
+        if(numberOfAnimals > map.getWidth() * map.getHeight()) {
+            throw new IllegalArgumentException("Number of animals is greater than the number of possible positions");
+        }
+
+        Set<Vector2d> freePositions = new HashSet<>();
+
+        for(int i = 0; i < map.getWidth(); i++) {
+            for(int j = 0; j < map.getHeight(); j++) {
+                freePositions.add(new Vector2d(i, j));
+            }
+        }
+
+        List<Vector2d> freePositionsList = new ArrayList<>(freePositions);
+
+        for(int i = 0; i < numberOfAnimals; i++) {
+            Collections.shuffle(freePositionsList);
+
+            Animal animal = new Animal(map, freePositionsList.get(0), startEnergy,
+                    new Genotype(lengthOfGenome, numberOfGenes));
+            animal.addStateObserver(this);
+
+            freePositionsList.remove(0);
+        }
+    }
+
+    public void removeDeadAnimals() {
+        for(Animal animal : deadAnimalsBuffer) {
+            map.removeAnimalFromMap(animal);
+        }
+
+        deadAnimalsBuffer.clear();
+    }
+
+    /**
+     * Moves all animals one tile in the random direction, according to the animal's genome
+     */
+    public void moveAnimals() {
+        Iterator<Animal> iterator = map.getAnimalListIterator();
+
+        while (iterator.hasNext()) {
+            //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
+            //        + " is being moved");
+            Animal currentAnimal = iterator.next();
+            currentAnimal.randomMove(moveEnergy);
+        }
+        //System.out.println("Moved Animals");
+    }
+
+    public void eatPlants() {
+        map.eatPlants(plantEnergy);
+        //System.out.println("Animals ate plants");
+    }
+
+    /**
+     * Reproduces all capable pairs of animals on tha map
+    */
+    public void reproduceAnimals() {
+        Iterator<Vector2d> iterator = map.getAnimalPositionsIterator();
+
+        while (iterator.hasNext()) {
+            //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
+            //        + " is being moved");
+
+            // If there are more than 2 animals on a given position
+            // then they may be able to reproduce
+            List<Animal> currentAnimalList = map.getAnimalsListAt(iterator.next()).get();
+            if(currentAnimalList.size() >= 2) {
+                // If a child was born, we add it to the list of nev animals
+                Optional<Animal> child = Animal.haveSexyTime(currentAnimalList, map, startEnergy);
+                // We add the simulation object as an observer
+                child.ifPresent(animal -> animal.addStateObserver(this));
+            }
+        }
+
+        //System.out.println("Animals reproduced");
+    }
+
+    public void generatePlants() {
+        map.generatePlants();
+        //System.out.println("Plants generated");
+
+        // It is the end of a day, so we increment the current day value
+        statisticsManager.incrementDay();
+    }
+
     @Override
     public void animalDied(Animal deadAnimal) {
-        System.out.println("Animal died method called");
+        deadAnimalsBuffer.add(deadAnimal);
+        System.out.println("Animal " + deadAnimal + "died at day " + statisticsManager.getCurrentDay());
+    }
 
-        if(followedAnimal != null && followedAnimal.equals(deadAnimal)) {
-            System.out.println("Followed animal died");
-        }
+    @Override
+    public void animalBorn(Animal parent, Animal child) {
+
     }
 }

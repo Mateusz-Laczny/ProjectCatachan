@@ -2,7 +2,6 @@ package entities;
 
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalPositionObserver;
-import datatypes.observer.IAnimalStateObserver;
 import datatypes.observer.IPlantStateObserver;
 import util.randomMock.IRandomGenerator;
 import util.randomMock.RealRandom;
@@ -10,7 +9,7 @@ import util.randomMock.RealRandom;
 import java.util.*;
 
 
-public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, IPlantStateObserver {
+public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     // Map dimensions
     private final int width;
     private final int height;
@@ -24,8 +23,6 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
     private final Vector2d mapLowerLeftCorner;
     private final Vector2d mapUpperRightCorner;
 
-    // Number of animals
-    private int numberOfAnimals;
 
     // Different collections
     private final List<Animal> animalsList;
@@ -33,7 +30,6 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
     private final Map<Vector2d, Plant> plants;
     private final List<Vector2d> freePositionsSteppe;
     private final List<Vector2d> freePositionsJungle;
-    private final List<Animal> animalsBuffer;
 
     // Used for testing
     private IRandomGenerator random;
@@ -86,12 +82,9 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
         // Initializing collections
         animalsList = new LinkedList<>();
         animals = new HashMap<>();
-        animalsBuffer = new LinkedList<>();
         plants = new HashMap<>();
         freePositionsSteppe = new LinkedList<>();
         freePositionsJungle = new LinkedList<>();
-
-        numberOfAnimals = 0;
 
         for(int i = 0; i < width; i++) {
             for(int j = 0; j < height; j++) {
@@ -161,12 +154,43 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
     }
 
     public int getNumberOfAnimals() {
-        return numberOfAnimals;
+        return animalsList.size();
     }
 
+    /**
+     * Returns an iterator over the animals list.
+     * To avoid concurrent modification errors, the iterator is,
+     * in reality, an iterator over the copy of the list
+     *
+     * @return
+     *      An iterator over the animal list
+     */
     public Iterator<Animal> getAnimalListIterator() {
-        return animalsList.iterator();
+        return List.copyOf(animalsList).iterator();
     }
+
+    /**
+     * Returns an iterator over the keys of the animal to position map.
+     * To avoid concurrent modification errors, the iterator is in reality
+     * an iterator over the copy of the key set
+     *
+     * @return
+     *      An iterator over the positions occupied by animals
+     */
+    public Iterator<Vector2d> getAnimalPositionsIterator() {
+        Set<Vector2d> keySetCopy = Set.copyOf(animals.keySet());
+        return keySetCopy.iterator();
+    }
+
+    public Optional<List<Animal>> getAnimalsListAt(Vector2d position) {
+        if(animals.containsKey(position)) {
+            return Optional.of(List.copyOf(animals.get(position)));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    // Methods
 
     /**
      * Returns plant at a given position, or an empty Optional object if the position has no plants
@@ -291,76 +315,17 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
         }
     }
 
-    //TODO WYRZUCIĆ
     /**
-     * Checks energy of every animal on the map.
-     * If it's bellow or equal to 0, calls the die method on that animal
-     */
-    public void removeDeadAnimals() {
-        addAllFromBuffer();
-
-        for (Animal animal : animalsList) {
-            if(animal.getEnergy() <= 0) {
-                animal.die();
-            }
-        }
-
-        removeAllFromBuffer();
-    }
-
-    // TODO WYRZUCIĆ
-    /**
-     * Reproduces all capable pairs of animals on tha map
+     * Removes an animal from the map
      *
-     * @param startingEnergy
-     *      The energy with which the animals started the simulation
+     * @param animal
+     *      Animal to be removed
      */
-    public void reproduceAllAnimals(int startingEnergy) {
-        for (List<Animal> animalsAtPosition : animals.values()) {
-            // If there are more than 2 animals on a given position
-            // then they may be able to reproduce
-            if(animalsAtPosition.size() >= 2) {
-                // If a child was born, we add it to the list of nev animals
-                Animal.haveSexyTime(animalsAtPosition, this, startingEnergy);
-            }
-        }
+    public void removeAnimalFromMap(Animal animal) {
+        animalsList.remove(animal);
+        animals.get(animal.getPosition()).remove(animal);
     }
 
-    // TODO WYRZUCIĆ
-    /**
-     * Moves all animals one tile in the random direction, according to the animal's genome
-     */
-    public void moveAnimals(int moveEnergy) {
-        for (Animal animal : animalsList) {
-            //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
-            //        + " is being moved");
-            animal.randomMove(moveEnergy);
-        }
-    }
-
-    private void addAllFromBuffer() {
-        for(Animal animal : animalsBuffer) {
-            placeAt(animal, animal.getPosition());
-            animalsList.add(animal);
-            animal.addStateObserver(this);
-            animal.addPositionObserver(this);
-            removeFromPossiblePositionsForPlants(animal.getPosition());
-        }
-
-        animalsBuffer.clear();
-    }
-
-    private void removeAllFromBuffer() {
-        for(Animal animal : animalsBuffer) {
-            //System.out.println("Animal at position " + animal.getPosition().toString() + " and energy " +
-            //        animal.getEnergy() + " will be removed");
-            animals.get(animal.getPosition()).remove(animal);
-            animalsList.remove(animal);
-            updatePositionStatusForPlants(animal.getPosition());
-        }
-
-        animalsBuffer.clear();
-    }
 
     /**
      * Places animal on the map at the given position. If the position is incorrect, an error is thrown
@@ -394,8 +359,9 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
      *          If given animal is at an incorrect position
      */
     public void place(Animal animal) throws IllegalArgumentException{
-        animalsBuffer.add(animal);
-        numberOfAnimals += 1;
+        animalsList.add(animal);
+        animal.addPositionObserver(this);
+        placeAt(animal, animal.getPosition());
     }
 
     /**
@@ -436,14 +402,6 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
         return new Vector2d(randomX, randomY);
     }
 
-    // TODO WYRZUCIĆ
-    public void generateAnimalsAtRandomPositions(int numberOfAnimals, int startingEnergy,
-                                                 int lengthOfGenotype, int numberOfGenes) {
-        for(int i = 0; i < numberOfAnimals; i++) {
-            new Animal(this, startingEnergy, lengthOfGenotype, numberOfGenes);
-        }
-    }
-
     @Override
     public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
         // Updating the animal map
@@ -461,12 +419,6 @@ public class WorldMap implements IAnimalStateObserver, IAnimalPositionObserver, 
         // Updating the free positions collections
         updatePositionStatusForPlants(oldPosition);
         removeFromPossiblePositionsForPlants(newPosition);
-    }
-
-    @Override
-    public void animalDied(Animal deadAnimal) {
-        animalsBuffer.add(deadAnimal);
-        numberOfAnimals -= 1;
     }
 
     @Override

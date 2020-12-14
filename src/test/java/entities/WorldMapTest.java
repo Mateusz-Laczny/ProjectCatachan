@@ -59,33 +59,36 @@ class WorldMapTest {
     @Test
     public void showsCorrectNumberOfAnimals() {
         WorldMap map = new WorldMap(12, 12, 0.5);
+        Simulation simulation = new Simulation(map, 1, 1, 1);
 
         for (int i = 0; i < 4; i++) {
-            new Animal(map, 1, 32, 8);
+            Animal animal = new Animal(map, 1, 32, 8);
+            animal.addStateObserver(simulation);
         }
 
-        new Animal(map, 2, 32, 8);
+        Animal animal = new Animal(map, 2, 32, 8);
+        animal.addStateObserver(simulation);
 
         // Full simulation cycle
         assertEquals(5, map.getNumberOfAnimals());
 
-        map.removeDeadAnimals();
+        simulation.removeDeadAnimals();
         assertEquals(5, map.getNumberOfAnimals());
 
-        map.moveAnimals(1);
+        simulation.moveAnimals();
         assertEquals(5, map.getNumberOfAnimals());
 
-        map.eatPlants(10);
+        simulation.eatPlants();
         assertEquals(5, map.getNumberOfAnimals());
 
-        map.reproduceAllAnimals(10);
+        simulation.reproduceAnimals();
         assertEquals(5, map.getNumberOfAnimals());
 
-        map.generatePlants();
+        simulation.generatePlants();
         assertEquals(5, map.getNumberOfAnimals());
 
         // 4 animals should die
-        map.removeDeadAnimals();
+        simulation.removeDeadAnimals();
         assertEquals(1, map.getNumberOfAnimals());
     }
 }

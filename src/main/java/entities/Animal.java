@@ -128,13 +128,11 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
 
     @Override
     public String toString() {
-//        return "Animal{" +
-//                "orientation=" + orientation +
-//                ", genotype=" + genotype +
-//                ", energy=" + energy +
-//                '}';
-
-        return position.toString();
+        return "Animal{" +
+                "orientation=" + orientation +
+                ", genotype=" + genotype +
+                ", energy=" + energy +
+                '}';
     }
 
     // Methods
@@ -154,6 +152,12 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         orientation = genotype.getRandomDirection();
         move(orientation);
         energy -= moveEnergy;
+
+        System.out.println(energy);
+
+        if(energy <= 0) {
+            die();
+        }
     }
 
     /**
@@ -235,10 +239,12 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
      * @param startingEnergy
      *      Starting energy of an animal. It is equal to the energy at the start of the simulation
      *
+     * @return Optional object containing the new animal, or empty optional
+     *
      * @throws IllegalArgumentException
      *      If the list contains less than 2 animals
      */
-    public static void haveSexyTime(List<Animal> animalsAtPosition, WorldMap map,  int startingEnergy)
+    public static Optional<Animal> haveSexyTime(List<Animal> animalsAtPosition, WorldMap map, int startingEnergy)
             throws IllegalArgumentException {
         if(animalsAtPosition.size() < 2) {
             throw new IllegalArgumentException("There are not enough animals to reproduce");
@@ -297,14 +303,27 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
                 }
             }
 
-            // Creating a child
-            new Animal(map, childPosition,(firstParent.getEnergy() + secondParent.getEnergy())/ 4,
+            // New animal which is the child of the parents
+            Animal child = new Animal(map, childPosition, (firstParent.getEnergy() + secondParent.getEnergy())/ 4,
                     firstParent, secondParent);
+
+            // We notify observers of both parents about the child
+            for (IAnimalStateObserver observer : firstParent.stateObservers) {
+                observer.animalBorn(firstParent, child);
+            }
+
+            for (IAnimalStateObserver observer : secondParent.stateObservers) {
+                observer.animalBorn(secondParent, child);
+            }
 
             // Parent loose energy during reproduction
             firstParent.energy -= firstParent.getEnergy() / 4;
             secondParent.energy -= secondParent.getEnergy() / 4;
+
+            return Optional.of(child);
         }
+
+        return Optional.empty();
     }
 
     /**

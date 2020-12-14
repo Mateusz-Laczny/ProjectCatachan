@@ -37,8 +37,12 @@ class AnimalTest {
         Animal reksio = new Animal(map, Vector2d.one(), 1,
                 new Genotype(32, 8));
 
+        Simulation simulation = new Simulation(map, 1, 1, 1);
+
+        reksio.addStateObserver(simulation);
         reksio.randomMove(1);
-        map.removeDeadAnimals();
+
+        simulation.removeDeadAnimals();
 
         assertTrue(map.animalAt(Vector2d.one()).isEmpty());
         assertTrue(map.animalAt(new Vector2d(1, 2)).isEmpty());
