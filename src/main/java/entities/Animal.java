@@ -4,21 +4,20 @@ import datatypes.AbstractMapElement;
 import datatypes.Direction;
 import datatypes.Genotype;
 import datatypes.Vector2d;
-import datatypes.observer.IAnimalPositionObserver;
-import datatypes.observer.IAnimalPositionPublisher;
-import datatypes.observer.IAnimalStateObserver;
-import datatypes.observer.IAnimalStatePublisher;
+import datatypes.observer.*;
 import util.randomMock.IRandomGenerator;
 
 import java.util.*;
 
-public class Animal extends AbstractMapElement implements IAnimalStatePublisher, IAnimalPositionPublisher {
+public class Animal extends AbstractMapElement implements IAnimalStatePublisher, IAnimalPositionPublisher,
+        IAnimalEnergyPublisher {
     private Direction orientation;
     private final WorldMap map;
     private final Genotype genotype;
     private int energy;
     private final Set<IAnimalStateObserver> stateObservers;
     private final Set<IAnimalPositionObserver> positionObservers;
+    private final Set<IAnimalEnergyObserver> energyObservers;
 
     /**
      * Constructor for an animal with defined attributes and a random orientation
@@ -46,6 +45,7 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
 
         stateObservers = new HashSet<>();
         positionObservers = new HashSet<>();
+        energyObservers = new HashSet<>();
 
         this.map = map;
         map.place(this);
@@ -118,7 +118,7 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         return energy;
     }
 
-    public Map<Integer, Integer> getGenesCount() {
+    public Map<Direction, Integer> getGenesCount() {
         return genotype.getGenesCount();
     }
 
@@ -151,9 +151,12 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     public void randomMove(int moveEnergy) {
         orientation = genotype.getRandomDirection();
         move(orientation);
-        energy -= moveEnergy;
 
-        System.out.println(energy);
+        for(IAnimalEnergyObserver observer : energyObservers) {
+            observer.energyChanged(energy, energy - moveEnergy);
+        }
+
+        energy -= moveEnergy;
 
         if(energy <= 0) {
             die();
@@ -223,8 +226,6 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         // Increasing energy of the strongest animals
         for (Animal strongestAnimal : animalsWithMaxEnergy) {
             strongestAnimal.energy += energyFromPlant / animalsWithMaxEnergy.size();
-            //System.out.println("Animal at position " + strongestAnimal.getPosition().toString() + " ate a plant " +
-            //        "and gained " + energyFromPlant / animalsWithMaxEnergy.size() + " energy");
         }
     }
 
@@ -316,6 +317,16 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
                 observer.animalBorn(secondParent, child);
             }
 
+            for(IAnimalEnergyObserver observer : firstParent.energyObservers) {
+                observer.energyChanged(firstParent.getEnergy(),
+                        firstParent.getEnergy() - firstParent.getEnergy() / 4);
+            }
+
+            for(IAnimalEnergyObserver observer : secondParent.energyObservers) {
+                observer.energyChanged(secondParent.getEnergy(),
+                        secondParent.getEnergy() - secondParent.getEnergy() / 4);
+            }
+
             // Parent loose energy during reproduction
             firstParent.energy -= firstParent.getEnergy() / 4;
             secondParent.energy -= secondParent.getEnergy() / 4;
@@ -355,5 +366,15 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     @Override
     public void removePositionObserver(IAnimalPositionObserver observer) {
         positionObservers.remove(observer);
+    }
+
+    @Override
+    public void addEnergyObserver(IAnimalEnergyObserver observer) {
+        energyObservers.add(observer);
+    }
+
+    @Override
+    public void removeEnergyObserver(IAnimalEnergyObserver observer) {
+        energyObservers.remove(observer);
     }
 }

@@ -206,14 +206,14 @@ public class Genotype {
         return genes.length;
     }
 
-    public Map<Integer, Integer> getGenesCount() {
-        Map<Integer, Integer> geneCount = new HashMap<>();
+    public Map<Direction, Integer> getGenesCount() {
+        Map<Direction, Integer> geneCount = new HashMap<>();
 
         for (int i = 0; i < getGenotypeLength(); i++) {
-            if(geneCount.containsKey(genes[i])) {
-                geneCount.replace(genes[i], geneCount.get(genes[i]) + 1);
+            if(geneCount.containsKey(Direction.intToDirection(genes[i]))) {
+                geneCount.replace(Direction.intToDirection(genes[i]), geneCount.get(Direction.intToDirection(genes[i])) + 1);
             } else {
-                geneCount.put(genes[i], 1);
+                geneCount.put(Direction.intToDirection(genes[i]), 1);
             }
         }
 

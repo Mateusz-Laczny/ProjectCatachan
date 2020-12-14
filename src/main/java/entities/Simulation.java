@@ -3,6 +3,7 @@ package entities;
 import datatypes.Genotype;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalStateObserver;
+import datatypes.observer.IPlantStateObserver;
 import managers.StatisticsManager;
 
 import java.util.*;
@@ -14,28 +15,37 @@ public class Simulation implements IAnimalStateObserver {
     private final int plantEnergy;
     private final int moveEnergy;
 
+    // Genome parameters
+    private final int genomeLength;
+    private final int numberOfGenes;
+
     private final List<Animal> deadAnimalsBuffer;
 
     private final StatisticsManager statisticsManager;
 
-    // TODO OBSŁUGA BŁĘDNYCH PARAMETRÓW
-    public Simulation(int width, int height, int startEnergy, int plantEnergy, int moveEnergy, double jungleRatio) {
+    public Simulation(int width, int height, int startEnergy, int plantEnergy, int moveEnergy, double jungleRatio,
+                      int genomeLength, int numberOfGenes) {
         this.startEnergy = startEnergy;
         this.map = new WorldMap(width, height, jungleRatio);
         this.plantEnergy = plantEnergy;
         this.moveEnergy = moveEnergy;
+        this.genomeLength = genomeLength;
+        this.numberOfGenes = numberOfGenes;
 
-        statisticsManager = new StatisticsManager();
+        statisticsManager = new StatisticsManager(numberOfGenes);
         deadAnimalsBuffer = new LinkedList<>();
     }
 
-    public Simulation(WorldMap map, int startEnergy, int plantEnergy, int moveEnergy) {
+    public Simulation(WorldMap map, int startEnergy, int plantEnergy, int moveEnergy, int genomeLength,
+                      int numberOfGenes) {
         this.startEnergy = startEnergy;
         this.map = map;
         this.plantEnergy = plantEnergy;
         this.moveEnergy = moveEnergy;
+        this.genomeLength = genomeLength;
+        this.numberOfGenes = numberOfGenes;
 
-        statisticsManager = new StatisticsManager();
+        statisticsManager = new StatisticsManager(numberOfGenes);
         deadAnimalsBuffer = new LinkedList<>();
     }
 
@@ -75,7 +85,7 @@ public class Simulation implements IAnimalStateObserver {
     }
 
 
-    public void generateAnimalsAtRandomPositions(int numberOfAnimals, int lengthOfGenome, int numberOfGenes) {
+    public void generateAnimalsAtRandomPositions(int numberOfAnimals) {
         if(numberOfAnimals > map.getWidth() * map.getHeight()) {
             throw new IllegalArgumentException("Number of animals is greater than the number of possible positions");
         }
@@ -94,8 +104,11 @@ public class Simulation implements IAnimalStateObserver {
             Collections.shuffle(freePositionsList);
 
             Animal animal = new Animal(map, freePositionsList.get(0), startEnergy,
-                    new Genotype(lengthOfGenome, numberOfGenes));
+                    new Genotype(genomeLength, numberOfGenes));
             animal.addStateObserver(this);
+            animal.addStateObserver(statisticsManager);
+
+            statisticsManager.addAnimal(animal);
 
             freePositionsList.remove(0);
         }
@@ -153,9 +166,35 @@ public class Simulation implements IAnimalStateObserver {
         //System.out.println("Animals reproduced");
     }
 
-    public void generatePlants() {
-        map.generatePlants();
+    /**
+     * Generates one plant in the steppe and one plant in the jungle.
+     * If there are no available positions, does nothing.
+     */
+    public void generatePlants() { ;
         //System.out.println("Plants generated");
+
+        Optional<Vector2d> randomPositionJungle = map.getRandomPositionFromJungle();
+        Optional<Vector2d> randomPositionSteppe = map.getRandomPositionFromSteppe();
+
+        if(randomPositionJungle.isPresent()) {
+            Plant newPlant = new Plant(randomPositionJungle.get());
+            newPlant.addPlantObserver(map);
+            newPlant.addPlantObserver(statisticsManager);
+
+            newPlant.notifyAboutANewPlant();
+
+            //System.out.println("New plant is generated in jungle, at position " + randomPositionJungle);
+        }
+
+        if(randomPositionSteppe.isPresent()) {
+            Plant newPlant = new Plant(randomPositionSteppe.get());
+            newPlant.addPlantObserver(map);
+            newPlant.addPlantObserver(statisticsManager);
+
+            newPlant.notifyAboutANewPlant();
+
+            //System.out.println("New plant is generated in steppe, at position " + randomPositionSteppe);
+        }
 
         // It is the end of a day, so we increment the current day value
         statisticsManager.incrementDay();
@@ -164,7 +203,6 @@ public class Simulation implements IAnimalStateObserver {
     @Override
     public void animalDied(Animal deadAnimal) {
         deadAnimalsBuffer.add(deadAnimal);
-        System.out.println("Animal " + deadAnimal + "died at day " + statisticsManager.getCurrentDay());
     }
 
     @Override

@@ -125,12 +125,16 @@ public class MainApplicationController extends AbstractController implements Ini
         // Disabling the follow button
         followButton.setDisable(true);
 
+        if(taskThread != null && taskThread.isAlive()) {
+            taskThread.interrupt();
+        }
+
         if(parameters != null) {
             Optional<Integer> startingNumberOfAnimalsOptional = loadNumber("Choose the starting number of animals");
 
             running = true;
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
-                    parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio);
+                    parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio, 32, 8);
 
             taskThread = new Thread(new Runnable() {
                 public void run() {
@@ -178,8 +182,7 @@ public class MainApplicationController extends AbstractController implements Ini
             if(startingNumberOfAnimalsOptional.isPresent()) {
                 int startingNumberOfAnimals = startingNumberOfAnimalsOptional.get();
                 if (simulationManager != null) {
-                    simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals,
-                            32, 8);
+                    simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals);
                     refreshMap();
                     taskThread.start();
                 }
@@ -232,7 +235,7 @@ public class MainApplicationController extends AbstractController implements Ini
         try {
             parameters = parametersParser.readParameters(currentDirectory + "/parameters.json");
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
-                    parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio);
+                    parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio, 32, 8);
 
             setMapPane();
             showAlertBox("Parameters loaded");
@@ -297,12 +300,11 @@ public class MainApplicationController extends AbstractController implements Ini
             Animal animalAtPosition = animalAtPositionOptional.get();
             selectedAnimal = animalAtPosition;
 
-            Map<Integer, Integer> geneCount = animalAtPosition.getGenesCount();
+            Map<Direction, Integer> geneCount = animalAtPosition.getGenesCount();
 
-            for(int i = 0; i < animalAtPosition.getGenotypeLength(); i++) {
-                if(geneCount.containsKey(i)) {
-                    statisticsList.getItems().add("Gene of type " + Direction.intToDirection(i) + ": " +
-                            geneCount.get(i));
+            for(Direction direction : Direction.values()) {
+                if(geneCount.containsKey(direction)) {
+                    statisticsList.getItems().add("Gene of type " + direction + ": " + geneCount.get(direction));
                 }
             }
         }

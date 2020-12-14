@@ -28,6 +28,8 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     private final List<Animal> animalsList;
     private final Map<Vector2d, List<Animal>> animals;
     private final Map<Vector2d, Plant> plants;
+
+    // TODO WYRZUCIĆ I ZMIENIĆ NA ZBIORY
     private final List<Vector2d> freePositionsSteppe;
     private final List<Vector2d> freePositionsJungle;
 
@@ -158,6 +160,39 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     }
 
     /**
+     * Returns a random position from the inside of the map
+     *
+     * @return
+     *      Vector2d object representing the position
+     */
+    public Vector2d getRandomPositionFromMap() {
+        Random random = new Random();
+
+        int randomX = random.nextInt(width);
+        int randomY = random.nextInt(height);
+
+        return new Vector2d(randomX, randomY);
+    }
+
+    public Optional<Vector2d> getRandomPositionFromJungle() {
+        if(!freePositionsJungle.isEmpty()) {
+            Collections.shuffle(freePositionsJungle);
+            return Optional.of(freePositionsJungle.get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Vector2d> getRandomPositionFromSteppe() {
+        if(!freePositionsSteppe.isEmpty()) {
+            Collections.shuffle(freePositionsSteppe);
+            return Optional.of(freePositionsSteppe.get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Returns an iterator over the animals list.
      * To avoid concurrent modification errors, the iterator is,
      * in reality, an iterator over the copy of the list
@@ -189,8 +224,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
             return Optional.empty();
         }
     }
-
-    // Methods
 
     /**
      * Returns plant at a given position, or an empty Optional object if the position has no plants
@@ -234,8 +267,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         return Optional.empty();
     }
 
-    // Methods
-
     @Override
     public String toString() {
         return "WorldMap{" +
@@ -269,33 +300,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         }
     }
 
-    // TODO WYRZUCIĆ
-    /**
-     * Generates one plant in the steppe and one plant in the jungle.
-     * If there are no available positions, does nothing.
-     */
-    public void generatePlants() {
-        if(!freePositionsJungle.isEmpty()) {
-            Vector2d randomPositionJungle = freePositionsJungle.get(random.nextInt(freePositionsJungle.size()));
-            Plant newPlant = new Plant(randomPositionJungle);
-            newPlant.addPlantObserver(this);
-
-            //System.out.println("New plant is generated in jungle, at position " + randomPositionJungle);
-            plants.put(randomPositionJungle, newPlant);
-            freePositionsJungle.remove(randomPositionJungle);
-        }
-
-        if(!freePositionsSteppe.isEmpty()) {
-            Vector2d randomPositionSteppe = freePositionsSteppe.get(random.nextInt(freePositionsSteppe.size()));
-            Plant newPlant = new Plant(randomPositionSteppe);
-            newPlant.addPlantObserver(this);
-
-            //System.out.println("New plant is generated in steppe, at position " + randomPositionSteppe);
-            plants.put(randomPositionSteppe, newPlant);
-            freePositionsSteppe.remove(randomPositionSteppe);
-        }
-    }
-
+    // Methods
 
     // TODO WYRZUCIĆ
     public void eatPlants(int energyFromPlant) {
@@ -387,21 +392,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         return position.follows(jungleUpperRightCorner) && position.precedes(jungleLowerLeftCorner);
     }
 
-    /**
-     * Returns a random position from the inside of the map
-     *
-     * @return
-     *      Vector2d object representing the position
-     */
-    public Vector2d getRandomPositionFromMap() {
-        Random random = new Random();
-
-        int randomX = random.nextInt(width);
-        int randomY = random.nextInt(height);
-
-        return new Vector2d(randomX, randomY);
-    }
-
     @Override
     public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
         // Updating the animal map
@@ -425,6 +415,13 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     public void plantEaten(Plant eatenPlant) {
         plants.remove(eatenPlant.getPosition());
         updatePositionStatusForPlants(eatenPlant.getPosition());
+    }
+
+    // TODO WYRZUCIĆ
+    @Override
+    public void newPlant(Plant newPlant) {
+        plants.put(newPlant.getPosition(), newPlant);
+        freePositionsJungle.remove(newPlant.getPosition());
     }
 
     // TODO WYRZUCIĆ

@@ -17,6 +17,24 @@ public class Plant extends AbstractMapElement implements IPlantStatePublisher {
         observers = new HashSet<>();
     }
 
+    /**
+     * Notifies all observers about a new plant
+     */
+    public void notifyAboutANewPlant() {
+        for(IPlantStateObserver observer : observers) {
+            observer.newPlant(this);
+        }
+    }
+
+    /**
+     * Notifies all observers to remove plant from their collections
+     */
+    public void removePlant() {
+        for(IPlantStateObserver observer : observers) {
+            observer.plantEaten(this);
+        }
+    }
+
     @Override
     public String toString() {
         return "Plant{" +
@@ -32,14 +50,5 @@ public class Plant extends AbstractMapElement implements IPlantStatePublisher {
     @Override
     public void removePlantObserver(IPlantStateObserver observer) {
         observers.remove(observer);
-    }
-
-    /**
-     * Notifies all observers to remove plant from their collections
-     */
-    public void removePlant() {
-        for(IPlantStateObserver observer : observers) {
-            observer.plantEaten(this);
-        }
     }
 }
