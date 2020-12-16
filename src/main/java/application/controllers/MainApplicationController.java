@@ -1,5 +1,6 @@
 package application.controllers;
 
+import datatypes.OneDayStatistics;
 import datatypes.ui.Cell;
 import datatypes.ui.Grid;
 import datatypes.Direction;
@@ -11,8 +12,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -20,13 +22,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import util.Parameters;
 import util.ParametersParser;
-import util.tasks.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainApplicationController extends AbstractController implements Initializable {
     // Buttons on the main window
@@ -35,17 +34,21 @@ public class MainApplicationController extends AbstractController implements Ini
     public Button resumeButton;
     public Button stopButton;
     public Button addMapButton;
-    public Button showStatisticsButton;
     public Button loadButton;
     public Button followButton;
 
     public Pane mapPane;
+    // Statistics
     public ListView<String> statisticsList;
+    public LineChart<String, Number> populationsChart;
+    public LineChart<String, Number> energyAndChildrenChart;
+    public BarChart<String, Number> genesChart;
+
+    private LineChartController populationsChartController;
+    private LineChartController energyAndChildrenChartController;
+    private BarChartController genesChartController;
     // Map Grid
     private Grid grid;
-
-    public Label currentStageLabel;
-    public Label statisticsListLabel;
 
     // Main simulation manager
     private Simulation simulationManager;
@@ -53,12 +56,6 @@ public class MainApplicationController extends AbstractController implements Ini
     Thread taskThread;
     // For parameters parsing
     private ParametersParser parametersParser;
-    // Tasks for simulation manager
-    AbstractSimulationTask removeDeadTask;
-    AbstractSimulationTask moveTask;
-    AbstractSimulationTask eatTask;
-    AbstractSimulationTask reproduceTask;
-    AbstractSimulationTask generatePlantsTask;
 
     // Parameters of the simulation
     Parameters parameters;
@@ -129,12 +126,24 @@ public class MainApplicationController extends AbstractController implements Ini
             taskThread.interrupt();
         }
 
+        // Clearing the charts
+        energyAndChildrenChart.getData().clear();
+        populationsChart.getData().clear();
+        genesChart.getData().clear();
+
         if(parameters != null) {
             Optional<Integer> startingNumberOfAnimalsOptional = loadNumber("Choose the starting number of animals");
 
             running = true;
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
                     parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio, 32, 8);
+
+            populationsChartController = new LineChartController(populationsChart, "Day",
+                    List.of("Animals", "Plants"));
+            energyAndChildrenChartController = new LineChartController(energyAndChildrenChart, "Day",
+                    List.of("Mean Energy", "Mean num. of children", "Mean Lifespan"));
+            genesChartController = new BarChartController(genesChart);
+
 
             taskThread = new Thread(new Runnable() {
                 public void run() {
@@ -159,11 +168,39 @@ public class MainApplicationController extends AbstractController implements Ini
                                         simulationManager.generatePlants();
                                         refreshMap();
 
+                                        // Getting the statistics at the ned of the day
+                                        OneDayStatistics dayStatistics = simulationManager.getCurrentDayStatistics();
+
+                                        populationsChartController.addSeriesEntry("Animals",
+                                                dayStatistics.currentDay, dayStatistics.numberOfAnimals);
+
+                                        populationsChartController.addSeriesEntry("Plants",
+                                                dayStatistics.currentDay, dayStatistics.numberOfPlants);
+
+                                        energyAndChildrenChartController.addSeriesEntry("Mean Energy",
+                                                dayStatistics.currentDay, dayStatistics.meanEnergyLevel);
+
+                                        energyAndChildrenChartController.addSeriesEntry("Mean num. of children",
+                                                dayStatistics.currentDay, dayStatistics.meanNumberOfChildren);
+
+                                        energyAndChildrenChartController.addSeriesEntry("Mean Lifespan",
+                                                dayStatistics.currentDay, dayStatistics.meanLifespan);
+
+                                        Map<Direction, Integer> genesCount = dayStatistics.genesCount;
+                                        Map<String, Number> genesCountWithStringLabels = new LinkedHashMap<>();
+
+                                        for(Direction direction : genesCount.keySet()) {
+                                            genesCountWithStringLabels.put(direction.toString(), genesCount.get(direction));
+                                        }
+
+                                        genesChartController.updateSeries(genesCountWithStringLabels);
+
                                         if(simulationManager.getNumberOfAnimals() == 0) {
                                             running = false;
                                         }
                                     } catch (Exception exception) {
                                         exception.printStackTrace();
+                                        taskThread.interrupt();
                                         showAlertBox("Ups! Something went wrong " + exception.getMessage());
                                     }
                                 }
@@ -171,7 +208,7 @@ public class MainApplicationController extends AbstractController implements Ini
                         });
 
                         try{
-                            Thread.sleep(200);
+                            Thread.sleep(90);
                         } catch(InterruptedException e){
                             break;
                         }
@@ -269,10 +306,6 @@ public class MainApplicationController extends AbstractController implements Ini
         }
     }
 
-    private void setStageLabelText(String text) {
-        currentStageLabel.setText(text);
-    }
-
     private void setMapPane() {
         mapPane.getChildren().clear();
 
@@ -292,7 +325,6 @@ public class MainApplicationController extends AbstractController implements Ini
 
     public void cellHighlighted(Vector2d position) {
         statisticsList.getItems().clear();
-        statisticsListLabel.setOpacity(0);
 
         Optional<Animal> animalAtPositionOptional = simulationManager.animalAt(position);
 
@@ -312,11 +344,6 @@ public class MainApplicationController extends AbstractController implements Ini
 
     public void cellUnHighlighted(Vector2d position) {
         statisticsList.getItems().clear();
-        statisticsListLabel.setOpacity(1);
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     public void close() {

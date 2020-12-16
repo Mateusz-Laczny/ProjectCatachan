@@ -1,60 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="777.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.MainApplicationController">
-   <right>
-      <AnchorPane prefHeight="777.0" prefWidth="246.0">
-         <children>
-            <Label layoutX="70.0" layoutY="8.0" text="Menu">
-               <font>
-                  <Font size="44.0" />
-               </font>
-            </Label>
-            <TilePane layoutX="39.0" layoutY="62.0" prefHeight="200.0" prefWidth="237.0" AnchorPane.leftAnchor="39.0" AnchorPane.rightAnchor="38.0" AnchorPane.topAnchor="62.0">
-               <children>
-                  <Button fx:id="startButton" mnemonicParsing="false" text="Start" />
-                  <Button fx:id="pauseButton" mnemonicParsing="false" text="Pause" />
-                  <Button fx:id="stopButton" mnemonicParsing="false" text="Stop" />
-                  <Button fx:id="resumeButton" mnemonicParsing="false" text="Resume" />
-                  <Button fx:id="loadButton" mnemonicParsing="false" text="Load" />
-                  <Button fx:id="showStatisticsButton" mnemonicParsing="false" text="Show Statistics" wrapText="true" />
-                  <Button fx:id="addMapButton" mnemonicParsing="false" text="Add Map" />
-               </children>
-            </TilePane>
-            <Label layoutX="44.0" layoutY="298.0" text="Currently">
-               <font>
-                  <Font size="38.0" />
-               </font>
-            </Label>
-            <Label fx:id="currentStageLabel" alignment="TOP_CENTER" layoutX="6.0" layoutY="353.0" prefHeight="106.0" prefWidth="255.0" text="Doing nothing" wrapText="true">
-               <font>
-                  <Font size="32.0" />
-               </font>
-            </Label>
-            <ListView fx:id="statisticsList" layoutX="33.0" layoutY="417.0" prefHeight="223.0" prefWidth="200.0" />
-            <Button fx:id="followButton" disable="true" layoutX="103.0" layoutY="652.0" mnemonicParsing="false" text="Follow" />
-            <Label fx:id="statisticsListLabel" layoutX="72.0" layoutY="499.0" prefHeight="76.0" prefWidth="124.0" text="Select an animal to view it's genotype" textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-         </children>
-      </AnchorPane>
-   </right>
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="908.0" prefWidth="1014.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.MainApplicationController">
    <center>
-      <AnchorPane maxHeight="800.0" maxWidth="886.0" prefHeight="777.0" prefWidth="799.0" BorderPane.alignment="CENTER">
+      <AnchorPane maxHeight="800.0" maxWidth="1062.0" prefHeight="601.0" prefWidth="1062.0" BorderPane.alignment="CENTER">
          <children>
-            <Pane fx:id="mapPane" layoutX="14.0" layoutY="9.0" prefHeight="759.0" prefWidth="730.0" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0">
+            <Pane fx:id="mapPane" layoutX="6.0" layoutY="9.0" prefHeight="646.0" prefWidth="837.0" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="9.0">
                <children>
-                  <Label fx:id="emptyMapPaneLabel" layoutX="137.0" layoutY="333.0" prefHeight="93.0" prefWidth="462.0" text="Use Load button to load map parameters" textAlignment="CENTER" wrapText="true">
+                  <Label fx:id="emptyMapPaneLabel" layoutX="144.0" layoutY="251.0" prefHeight="93.0" prefWidth="462.0" text="Use Load button to load map parameters" textAlignment="CENTER" wrapText="true">
                      <font>
                         <Font size="31.0" />
                      </font>
@@ -64,4 +32,84 @@
          </children>
       </AnchorPane>
    </center>
+   <bottom>
+      <HBox prefHeight="316.0" prefWidth="1039.0" BorderPane.alignment="CENTER">
+         <children>
+            <LineChart fx:id="populationsChart" horizontalGridLinesVisible="false" prefHeight="240.0" prefWidth="507.0" verticalGridLinesVisible="false">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+               <HBox.margin>
+                  <Insets bottom="20.0" />
+               </HBox.margin>
+            </LineChart>
+            <LineChart fx:id="energyAndChildrenChart" horizontalGridLinesVisible="false" prefHeight="300.0" prefWidth="507.0" verticalGridLinesVisible="false">
+               <xAxis>
+                  <CategoryAxis side="BOTTOM" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" />
+               </yAxis>
+               <HBox.margin>
+                  <Insets bottom="20.0" />
+               </HBox.margin>
+            </LineChart>
+         </children>
+      </HBox>
+   </bottom>
+   <right>
+      <VBox prefHeight="556.0" prefWidth="276.0" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <ListView fx:id="statisticsList" disable="true" pickOnBounds="false" prefHeight="210.0" prefWidth="256.0" />
+            <BarChart fx:id="genesChart" prefHeight="240.0" prefWidth="273.0">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+            </BarChart>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </VBox>
+   </right>
+   <top>
+      <ButtonBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="27.0" prefWidth="1014.0">
+         <buttons>
+            <Button fx:id="followButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" prefWidth="117.0" text="Follow">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="stopButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Stop">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="pauseButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Pause">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="addMapButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Add Map">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="loadButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Load">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="resumeButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Resume">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+            <Button fx:id="startButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="117.0" text="Start">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding></Button>
+         </buttons>
+      </ButtonBar>
+   </top>
 </BorderPane>

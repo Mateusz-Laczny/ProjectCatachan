@@ -152,8 +152,10 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         orientation = genotype.getRandomDirection();
         move(orientation);
 
-        for(IAnimalEnergyObserver observer : energyObservers) {
-            observer.energyChanged(energy, energy - moveEnergy);
+        if(energy - moveEnergy > 0) {
+            energyChanged(this, -moveEnergy);
+        } else {
+            energyChanged(this, -energy);
         }
 
         energy -= moveEnergy;
@@ -225,7 +227,10 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
 
         // Increasing energy of the strongest animals
         for (Animal strongestAnimal : animalsWithMaxEnergy) {
-            strongestAnimal.energy += energyFromPlant / animalsWithMaxEnergy.size();
+            int energyChange = energyFromPlant / animalsWithMaxEnergy.size();
+
+            strongestAnimal.energy += energyChange;
+            energyChanged(strongestAnimal, energyChange);
         }
     }
 
@@ -317,15 +322,9 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
                 observer.animalBorn(secondParent, child);
             }
 
-            for(IAnimalEnergyObserver observer : firstParent.energyObservers) {
-                observer.energyChanged(firstParent.getEnergy(),
-                        firstParent.getEnergy() - firstParent.getEnergy() / 4);
-            }
+            energyChanged(firstParent, -firstParent.getEnergy() / 4);
 
-            for(IAnimalEnergyObserver observer : secondParent.energyObservers) {
-                observer.energyChanged(secondParent.getEnergy(),
-                        secondParent.getEnergy() - secondParent.getEnergy() / 4);
-            }
+            energyChanged(secondParent, -secondParent.getEnergy() / 4);
 
             // Parent loose energy during reproduction
             firstParent.energy -= firstParent.getEnergy() / 4;
@@ -345,6 +344,12 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         for(IAnimalStateObserver observer : stateObservers) {
             // Press F to pay respects
             observer.animalDied(this);
+        }
+    }
+
+    private static void energyChanged(Animal animal, int energyChange) {
+        for(IAnimalEnergyObserver observer : animal.energyObservers) {
+            observer.energyChanged(energyChange);
         }
     }
 

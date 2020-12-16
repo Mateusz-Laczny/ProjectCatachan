@@ -1,6 +1,7 @@
 package entities;
 
 import datatypes.Genotype;
+import datatypes.OneDayStatistics;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalStateObserver;
 import datatypes.observer.IPlantStateObserver;
@@ -115,6 +116,9 @@ public class Simulation implements IAnimalStateObserver {
     }
 
     public void removeDeadAnimals() {
+        // It is the start of a day, so we increment the current day value
+        statisticsManager.incrementDay();
+
         for(Animal animal : deadAnimalsBuffer) {
             map.removeAnimalFromMap(animal);
         }
@@ -195,9 +199,13 @@ public class Simulation implements IAnimalStateObserver {
 
             //System.out.println("New plant is generated in steppe, at position " + randomPositionSteppe);
         }
+    }
 
-        // It is the end of a day, so we increment the current day value
-        statisticsManager.incrementDay();
+    public OneDayStatistics getCurrentDayStatistics() {
+        return new OneDayStatistics(statisticsManager.getNumberOfAnimals(),
+                statisticsManager.getNumberOfPlants(), statisticsManager.getMeanEnergyLevel(),
+                statisticsManager.getMeanLifespan(), statisticsManager.getMeanNumberOfChildren(),
+                statisticsManager.getCurrentDay(), statisticsManager.getGenesCount());
     }
 
     @Override
