@@ -37,7 +37,7 @@ class AnimalTest {
         Animal reksio = new Animal(map, Vector2d.one(), 1,
                 new Genotype(32, 8));
 
-        Simulation simulation = new Simulation(map, 1, 1, 1);
+        Simulation simulation = new Simulation(map, 1, 1, 1, 32, 8);
 
         reksio.addStateObserver(simulation);
         reksio.randomMove(1);

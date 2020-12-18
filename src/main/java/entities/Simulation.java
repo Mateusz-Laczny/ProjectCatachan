@@ -132,7 +132,7 @@ public class Simulation implements IAnimalStateObserver {
      * Moves all animals one tile in the random direction, according to the animal's genome
      */
     public void moveAnimals() {
-        Iterator<Animal> iterator = map.getAnimalListIterator();
+        Iterator<Animal> iterator = map.getAnimalsIterator();
 
         while (iterator.hasNext()) {
             //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
@@ -144,8 +144,22 @@ public class Simulation implements IAnimalStateObserver {
     }
 
     public void eatPlants() {
-        map.eatPlants(plantEnergy);
-        //System.out.println("Animals ate plants");
+        List<Plant> plantsToRemove = new LinkedList<>();
+        Iterator<Plant> iterator = map.getPlantsIterator();
+
+        while (iterator.hasNext()) {
+            Plant currentPlant = iterator.next();
+            Optional<List<Animal>> animalsAtPositionOptional = map.getAnimalsListAt(currentPlant.getPosition());
+            if(animalsAtPositionOptional.isPresent()) {
+                Animal.eat(animalsAtPositionOptional.get(), plantEnergy);
+                plantsToRemove.add(currentPlant);
+            }
+        }
+
+        // Removing eaten plants
+        for(Plant plant : plantsToRemove) {
+            plant.removePlant();
+        }
     }
 
     /**

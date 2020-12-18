@@ -17,8 +17,8 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import util.FileParser;
@@ -42,12 +42,14 @@ public class MainApplicationController extends AbstractController implements Ini
     public Pane mapPane;
     // Statistics
     public ListView<String> statisticsList;
-    public LineChart<String, Number> populationsChart;
-    public LineChart<String, Number> energyAndChildrenChart;
+    public LineChart<String, Number> populationsAndEnergyChart;
+    public LineChart<String, Number> lifespanChart;
+    public LineChart<String, Number> childrenChart;
     public BarChart<String, Number> genesChart;
 
-    private LineChartController populationsChartController;
-    private LineChartController energyAndChildrenChartController;
+    private LineChartController populationsAndEnergyChartController;
+    private LineChartController lifespanChartController;
+    private LineChartController childrenChartController;
     private BarChartController genesChartController;
     // Map Grid
     private Grid grid;
@@ -61,12 +63,6 @@ public class MainApplicationController extends AbstractController implements Ini
 
     // Parameters of the simulation
     Parameters parameters;
-
-    // Map images
-    Image background = new Image(getClass().getResource("/images/dirt.jpg").toExternalForm());
-    Image animal = new Image(getClass().getResource("/images/sheepWithoutGrass.jpg").toExternalForm());
-    Image animalFollowed = new Image(getClass().getResource("/images/followedAnimal.png").toExternalForm());
-    Image plant = new Image(getClass().getResource("/images/grass.png").toExternalForm());
 
     // Followed animal
     private Animal followedAnimal;
@@ -98,8 +94,9 @@ public class MainApplicationController extends AbstractController implements Ini
             }
 
             // Clearing the charts
-            energyAndChildrenChart.getData().clear();
-            populationsChart.getData().clear();
+            lifespanChart.getData().clear();
+            childrenChart.getData().clear();
+            populationsAndEnergyChart.getData().clear();
             genesChart.getData().clear();
 
             // Resetting the countdown until statistics box
@@ -179,10 +176,12 @@ public class MainApplicationController extends AbstractController implements Ini
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
                     parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio, 32, 8);
 
-            populationsChartController = new LineChartController(populationsChart, "Day",
-                    List.of("Animals", "Plants"));
-            energyAndChildrenChartController = new LineChartController(energyAndChildrenChart, "Day",
-                    List.of("Mean Energy", "Mean num. of children", "Mean Lifespan"));
+            populationsAndEnergyChartController = new LineChartController(populationsAndEnergyChart, "Day",
+                    List.of("Animals", "Plants", "Mean Energy"));
+            lifespanChartController = new LineChartController(lifespanChart, "Day",
+                    List.of("Mean Lifespan"));
+            childrenChartController = new LineChartController(childrenChart, "Day",
+                    List.of("Avg. number of children"));
             genesChartController = new BarChartController(genesChart);
 
 
@@ -212,19 +211,19 @@ public class MainApplicationController extends AbstractController implements Ini
                                         // Getting the statistics at the ned of the day
                                         StatisticsContainer dayStatistics = simulationManager.getCurrentDayStatistics();
 
-                                        populationsChartController.addSeriesEntry("Animals",
+                                        populationsAndEnergyChartController.addSeriesEntry("Animals",
                                                 dayStatistics.currentDay, dayStatistics.numberOfAnimals);
 
-                                        populationsChartController.addSeriesEntry("Plants",
+                                        populationsAndEnergyChartController.addSeriesEntry("Plants",
                                                 dayStatistics.currentDay, dayStatistics.numberOfPlants);
 
-                                        energyAndChildrenChartController.addSeriesEntry("Mean Energy",
+                                        populationsAndEnergyChartController.addSeriesEntry("Mean Energy",
                                                 dayStatistics.currentDay, dayStatistics.meanEnergyLevel);
 
-                                        energyAndChildrenChartController.addSeriesEntry("Mean num. of children",
+                                        childrenChartController.addSeriesEntry("Avg. number of children",
                                                 dayStatistics.currentDay, dayStatistics.meanNumberOfChildren);
 
-                                        energyAndChildrenChartController.addSeriesEntry("Mean Lifespan",
+                                        lifespanChartController.addSeriesEntry("Mean Lifespan",
                                                 dayStatistics.currentDay, dayStatistics.meanLifespan);
 
                                         Map<Direction, Integer> genesCount = dayStatistics.genesCount;
@@ -274,7 +273,7 @@ public class MainApplicationController extends AbstractController implements Ini
                         });
 
                         try{
-                            Thread.sleep(500);
+                            Thread.sleep(90);
                         } catch(InterruptedException e){
                             break;
                         }
@@ -398,14 +397,29 @@ public class MainApplicationController extends AbstractController implements Ini
 
                     if (animalAtPosition.isPresent()) {
                         if(animalAtPosition.get().equals(simulationManager.getFollowedAnimal())) {
-                            grid.getCell(j, i).setImage(animalFollowed);
+                            grid.getCell(j, i).setColour(Color.rgb(255, 201, 54, 1));
                         } else {
-                            grid.getCell(j, i).setImage(animal);
+                            // We choose the red value based on the animal energy
+                            // 0 energy - red
+                            // starting energy - brown (153)
+                            float energyMultiplayer = (float) animalAtPosition.get().getEnergy() / parameters.startEnergy;
+                            int redValue = (int) (255 * energyMultiplayer);
+                            int greenValue = (int) (132 * energyMultiplayer);
+
+                            if(redValue > 255) {
+                                redValue = 255;
+                            }
+
+                            if(greenValue > 132) {
+                                greenValue = 132;
+                            }
+
+                            grid.getCell(j, i).setColour(Color.rgb(redValue, greenValue, 34, 1));
                         }
                     } else if(simulationManager.plantAt(currentPosition).isPresent()) {
-                        grid.getCell(j, i).setImage(plant);
+                        grid.getCell(j, i).setColour(Color.rgb(33, 84, 30, 1));
                     } else {
-                        grid.getCell(j, i).setImage(background);
+                        grid.getCell(j, i).setColour(Color.rgb(126, 201, 119, 1));
                     }
                 }
             }
@@ -415,14 +429,12 @@ public class MainApplicationController extends AbstractController implements Ini
     private void setMapPane() {
         mapPane.getChildren().clear();
 
-        Image background = new Image(getClass().getResource("/images/dirt.jpg").toExternalForm());
-
         grid = new Grid(parameters.height, parameters.width, mapPane.getWidth(),
                 mapPane.getHeight(), this);
 
         for(int i = 0; i < parameters.height; i++) {
             for(int j = 0; j < parameters.width; j++) {
-                grid.add(j, i, background);
+                grid.add(j, i);
             }
         }
 

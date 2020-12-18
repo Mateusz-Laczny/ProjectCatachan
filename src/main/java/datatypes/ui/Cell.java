@@ -1,8 +1,9 @@
 package datatypes.ui;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
 
 public class Cell extends StackPane {
     public static boolean canBeClicked = false;
@@ -10,16 +11,16 @@ public class Cell extends StackPane {
     private final int column;
     private final int row;
 
-    private final ImageView image;
+    private final Rectangle background;
+    private Paint oldColour;
 
-    public Cell(int column, int row, Grid grid) {
+    public Cell(int column, int row, double width, double height, Grid grid) {
+        super();
         this.column = column;
         this.row = row;
 
-        // Setting up the image
-        this.image = new ImageView();
-
-        getStyleClass().add("map-cell");
+        background = new Rectangle(width, height);
+        this.getChildren().add(background);
 
         this.setOnMousePressed(event -> {
             Cell cell = (Cell) event.getSource();
@@ -34,32 +35,18 @@ public class Cell extends StackPane {
                 }
             }
         });
-
-        //setOpacity(0.9);
     }
 
     public void highlight() {
-        // ensure the style is only once in the style list
-        getStyleClass().remove("map-cell-highlight");
-
-        // add style
-        getStyleClass().add("map-cell-highlight");
+        oldColour = background.getFill();
+        background.setFill(Color.rgb(28, 53, 128, 1));
     }
 
     public void unhighlight() {
-        getStyleClass().remove("map-cell-highlight");
-    }
-
-    public void hoverHighlight() {
-        // ensure the style is only once in the style list
-        getStyleClass().remove("map-cell-hover-highlight");
-
-        // add style
-        getStyleClass().add("map-cell-hover-highlight");
-    }
-
-    public void hoverUnhighlight() {
-        getStyleClass().remove("cell-hover-highlight");
+        if (oldColour != null) {
+            background.setFill(oldColour);
+            oldColour = null;
+        }
     }
 
     public String toString() {
@@ -74,14 +61,7 @@ public class Cell extends StackPane {
         return column;
     }
 
-    public void initializeImage(Image image) {
-        this.image.setFitWidth(this.getPrefWidth());
-        this.image.setFitHeight(this.getPrefHeight());
-        this.image.setImage(image);
-        this.getChildren().add(this.image);
-    }
-
-    public void setImage(Image image) {
-        this.image.setImage(image);
+    public void setColour(Color colour) {
+        background.setFill(colour);
     }
 }

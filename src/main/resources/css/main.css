@@ -1,3 +1,9 @@
+.map-cell {
+    -fx-border-color: black;
+    -fx-background-color: #7ec977;
+    -fx-border-width: 2px;
+}
+
 .map-cell-highlight {
     -fx-padding: 3;
     -fx-background-color:derive(red, 0.3);

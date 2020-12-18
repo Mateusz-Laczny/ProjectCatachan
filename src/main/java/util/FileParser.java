@@ -52,8 +52,8 @@ public class FileParser {
             Writer writer = new FileWriter(currentDirectory + "/statistics.json");
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(container, writer);
-            writer.flush(); //flush data to file   <---
-            writer.close(); //close write
+            writer.flush();
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

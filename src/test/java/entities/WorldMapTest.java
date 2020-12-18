@@ -59,7 +59,7 @@ class WorldMapTest {
     @Test
     public void showsCorrectNumberOfAnimals() {
         WorldMap map = new WorldMap(12, 12, 0.5);
-        Simulation simulation = new Simulation(map, 1, 1, 1);
+        Simulation simulation = new Simulation(map, 1, 1, 1, 32, 8);
 
         for (int i = 0; i < 4; i++) {
             Animal animal = new Animal(map, 1, 32, 8);

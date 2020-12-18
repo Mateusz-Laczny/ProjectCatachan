@@ -117,8 +117,8 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
     }
 
     public float getMeanLifespan() {
-        if(lifespanSum == 0) {
-            return currentDay;
+        if(numberOfDeadAnimals == 0) {
+            return (float) currentDay / numberOfAnimals;
         } else {
             return (float) lifespanSum / numberOfDeadAnimals;
         }
@@ -165,7 +165,7 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
     public void animalDied(Animal deadAnimal) {
         numberOfAnimals -= 1;
         numberOfDeadAnimals += 1;
-        lifespanSum = currentDay - animalsBornDateMap.get(deadAnimal);
+        lifespanSum += currentDay - animalsBornDateMap.get(deadAnimal);
         animalsBornDateMap.remove(deadAnimal);
         aliveAnimalsChildrenCountSum -= numberOfChildren.get(deadAnimal);
         numberOfChildren.remove(deadAnimal);

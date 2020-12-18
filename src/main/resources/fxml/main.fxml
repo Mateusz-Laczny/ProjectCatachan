@@ -5,18 +5,19 @@
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="908.0" prefWidth="1014.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.MainApplicationController">
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="908.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.MainApplicationController">
    <center>
       <AnchorPane maxHeight="800.0" maxWidth="1062.0" prefHeight="601.0" prefWidth="1062.0" BorderPane.alignment="CENTER">
          <children>
@@ -35,7 +36,7 @@
    <bottom>
       <HBox prefHeight="316.0" prefWidth="1039.0" BorderPane.alignment="CENTER">
          <children>
-            <LineChart fx:id="populationsChart" horizontalGridLinesVisible="false" prefHeight="240.0" prefWidth="507.0" verticalGridLinesVisible="false">
+            <LineChart fx:id="populationsAndEnergyChart" animated="false" cache="true" horizontalGridLinesVisible="false" prefHeight="240.0" prefWidth="507.0" verticalGridLinesVisible="false">
               <xAxis>
                 <CategoryAxis side="BOTTOM" />
               </xAxis>
@@ -46,38 +47,20 @@
                   <Insets bottom="20.0" />
                </HBox.margin>
             </LineChart>
-            <LineChart fx:id="energyAndChildrenChart" horizontalGridLinesVisible="false" prefHeight="300.0" prefWidth="507.0" verticalGridLinesVisible="false">
-               <xAxis>
-                  <CategoryAxis side="BOTTOM" />
-               </xAxis>
-               <yAxis>
-                  <NumberAxis side="LEFT" />
-               </yAxis>
+            <BarChart fx:id="genesChart" animated="false" cache="true" horizontalGridLinesVisible="false" prefHeight="240.0" prefWidth="507.0">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
                <HBox.margin>
                   <Insets bottom="20.0" />
                </HBox.margin>
-            </LineChart>
+            </BarChart>
          </children>
       </HBox>
    </bottom>
-   <right>
-      <VBox prefHeight="556.0" prefWidth="276.0" spacing="10.0" BorderPane.alignment="CENTER">
-         <children>
-            <ListView fx:id="statisticsList" disable="true" pickOnBounds="false" prefHeight="210.0" prefWidth="256.0" />
-            <BarChart fx:id="genesChart" prefHeight="240.0" prefWidth="273.0">
-              <xAxis>
-                <CategoryAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                <NumberAxis side="LEFT" />
-              </yAxis>
-            </BarChart>
-         </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </VBox>
-   </right>
    <top>
       <ButtonBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="27.0" prefWidth="1014.0">
          <buttons>
@@ -113,4 +96,51 @@
          </buttons>
       </ButtonBar>
    </top>
+   <right>
+      <Accordion prefHeight="556.0" prefWidth="277.0" BorderPane.alignment="CENTER">
+        <panes>
+          <TitledPane animated="false" prefHeight="480.0" prefWidth="277.0" text="Selected Animal Statistics">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <ListView fx:id="statisticsList" disable="true" pickOnBounds="false" prefHeight="478.0" prefWidth="276.0" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
+          <TitledPane animated="false" text="Lifespan Graph">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <LineChart fx:id="lifespanChart" animated="false" cache="true" horizontalGridLinesVisible="false" layoutX="5.0" layoutY="89.0" prefHeight="300.0" prefWidth="266.0" verticalGridLinesVisible="false">
+                           <xAxis>
+                              <CategoryAxis side="BOTTOM" />
+                           </xAxis>
+                           <yAxis>
+                              <NumberAxis side="LEFT" />
+                           </yAxis>
+                        </LineChart>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
+          <TitledPane animated="false" text="Avg. number of children graph">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <LineChart fx:id="childrenChart" animated="false" cache="true" horizontalGridLinesVisible="false" layoutX="5.0" layoutY="89.0" prefHeight="300.0" prefWidth="266.0" verticalGridLinesVisible="false">
+                           <xAxis>
+                              <CategoryAxis side="BOTTOM" />
+                           </xAxis>
+                           <yAxis>
+                              <NumberAxis side="LEFT" />
+                           </yAxis>
+                        </LineChart>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
+        </panes>
+      </Accordion>
+   </right>
 </BorderPane>

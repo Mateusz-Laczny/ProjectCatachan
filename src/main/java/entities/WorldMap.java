@@ -135,10 +135,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         return new Vector2d[]{jungleLowerLeftCorner, jungleUpperRightCorner};
     }
 
-    public int[] getMapDimensions() {
-        return new int[]{width, height};
-    }
-
     public int getJungleWidth() {
         return jungleWidth;
     }
@@ -200,8 +196,13 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      * @return
      *      An iterator over the animal list
      */
-    public Iterator<Animal> getAnimalListIterator() {
+    public Iterator<Animal> getAnimalsIterator() {
         return List.copyOf(animalsList).iterator();
+    }
+
+    public Iterator<Plant> getPlantsIterator() {
+        Set<Plant> valuesSetCopy = Set.copyOf(plants.values());
+        return valuesSetCopy.iterator();
     }
 
     /**
@@ -301,25 +302,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     }
 
     // Methods
-
-    // TODO WYRZUCIĆ
-    public void eatPlants(int energyFromPlant) {
-        List<Plant> plantsToRemove = new LinkedList<>();
-
-        // Finding plants that will be eaten
-        for(Vector2d plantPosition : plants.keySet()) {
-            if(animals.containsKey(plantPosition)) {
-                Animal.eat(animals.get(plantPosition), energyFromPlant);
-                plantsToRemove.add(plants.get(plantPosition));
-            }
-        }
-
-        // Removing eaten plants
-        for(Plant plant : plantsToRemove) {
-            plant.removePlant();
-        }
-    }
-
     /**
      * Removes an animal from the map
      *
@@ -387,7 +369,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      *         Vector representing the position to check
      * @return True if the position is inside the jungle
      */
-    //TODO - WRZUCIC DO KLASY VECTOR2D
     private boolean isInsideJungle(Vector2d position) {
         return position.follows(jungleUpperRightCorner) && position.precedes(jungleLowerLeftCorner);
     }
@@ -417,11 +398,10 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         updatePositionStatusForPlants(eatenPlant.getPosition());
     }
 
-    // TODO WYRZUCIĆ
     @Override
     public void newPlant(Plant newPlant) {
         plants.put(newPlant.getPosition(), newPlant);
-        freePositionsJungle.remove(newPlant.getPosition());
+        removeFromPossiblePositionsForPlants(newPlant.getPosition());
     }
 
     // TODO WYRZUCIĆ

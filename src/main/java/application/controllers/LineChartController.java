@@ -9,9 +9,11 @@ import java.util.Map;
 
 public class LineChartController {
     private final Map<String, XYChart.Series<String, Number>> seriesMap;
+    private final LineChart<String, Number> chart;
 
     public LineChartController(LineChart<String, Number> chart, String XAxisLabel, List<String> seriesNames) {
         seriesMap = new HashMap<>();
+        this.chart = chart;
         chart.setCreateSymbols(false);
         chart.setAnimated(false);
 
@@ -30,6 +32,9 @@ public class LineChartController {
 
     public void addSeriesEntry(String seriesName, Number xValue, Number yValue) throws NullPointerException {
         XYChart.Series<String, Number> series = seriesMap.get(seriesName);
+        if(series.getData().size() > chart.getWidth()) {
+            series.getData().remove(0);
+        }
 
         series.getData().add(new XYChart.Data<>(xValue.toString(), yValue));
     }

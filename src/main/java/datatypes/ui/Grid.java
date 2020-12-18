@@ -29,22 +29,19 @@ public class Grid extends Pane {
     /**
      * Add cell to array and to the UI.
      */
-    public void add(int column, int row, Image image) {
-        Cell cell = new Cell(column, row, this);
-        cells[row][column] = cell;
-
-
+    public void add(int column, int row) {
         double w = width / columns;
         double h = height / rows;
         double x = w * column;
         double y = h * row;
 
+        Cell cell = new Cell(column, row, w, h,this);
+        cells[row][column] = cell;
+
         cell.setLayoutX(x);
         cell.setLayoutY(y);
         cell.setPrefWidth(w);
         cell.setPrefHeight(h);
-
-        cell.initializeImage(image);
 
         getChildren().add(cell);
     }
@@ -59,6 +56,17 @@ public class Grid extends Pane {
 
     public void cellUnHighlighted(Cell cell) {
         mainApplicationController.cellUnHighlighted(new Vector2d(cell.getColumn(), cell.getRow()));
+    }
+
+    /**
+     * Unhighlights all cells
+     */
+    public void unhighlightAll() {
+        for( int row=0; row < rows; row++) {
+            for( int col=0; col < columns; col++) {
+                cells[row][col].unhighlight();
+            }
+        }
     }
 }
 
