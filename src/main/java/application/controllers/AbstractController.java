@@ -12,6 +12,8 @@ import java.io.IOException;
 public abstract class AbstractController {
     protected Main main;
 
+    private Stage stage = null;
+
     public void setMainApp(Main main) {
         this.main = main;
     }
@@ -41,6 +43,16 @@ public abstract class AbstractController {
             popupStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    protected void closeStage() {
+        if(stage != null) {
+            stage.close();
         }
     }
 }

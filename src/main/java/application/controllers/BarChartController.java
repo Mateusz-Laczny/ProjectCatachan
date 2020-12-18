@@ -26,7 +26,6 @@ public class BarChartController {
 
 
         for(String name : values.keySet()) {
-            System.out.println(values.get(name));
             series.getData().add(new XYChart.Data<>(name, values.get(name)));
         }
     }

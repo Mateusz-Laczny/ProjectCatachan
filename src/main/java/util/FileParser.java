@@ -1,16 +1,19 @@
 package util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import entities.Simulation;
+import datatypes.StatisticsContainer;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 
-public class ParametersParser {
+public class FileParser {
     private final Gson gson;
 
-    public ParametersParser() {
+    public FileParser() {
         gson = new Gson();
     }
 
@@ -33,12 +36,26 @@ public class ParametersParser {
      *      If the reading of the file failed
      */
     public Parameters readParameters(String filePath) throws IOException{
-        Parameters parameters = null;
+        Parameters parameters;
 
         try (JsonReader reader = gson.newJsonReader(new FileReader(filePath))){
             parameters = gson.fromJson(reader, Parameters.class);
         }
 
         return parameters;
+    }
+
+    public void exportStatistics(StatisticsContainer container) {
+        String currentDirectory = System.getProperty("user.dir");
+
+        try {
+            Writer writer = new FileWriter(currentDirectory + "/statistics.json");
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(container, writer);
+            writer.flush(); //flush data to file   <---
+            writer.close(); //close write
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

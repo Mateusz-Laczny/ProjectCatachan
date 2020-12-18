@@ -5,18 +5,13 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="136.0" prefWidth="333.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.BasicAlertBoxController">
+<AnchorPane prefHeight="123.0" prefWidth="333.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.BasicAlertBoxController">
    <children>
-      <Label layoutX="14.0" layoutY="7.0" text="Error">
-         <font>
-            <Font size="22.0" />
-         </font>
-      </Label>
-      <Label fx:id="errorLabel" layoutX="14.0" layoutY="38.0" prefHeight="30.0" prefWidth="306.0" text="An error occured. Sorry!" wrapText="true">
+      <Label fx:id="errorLabel" alignment="TOP_LEFT" layoutX="15.0" layoutY="14.0" prefHeight="67.0" prefWidth="306.0" text="An error occured. Sorry!" wrapText="true" AnchorPane.topAnchor="14.0">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <Button fx:id="okButton" layoutX="140.0" layoutY="96.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="55.0" text="Ok" />
+      <Button fx:id="okButton" layoutX="141.0" layoutY="83.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="55.0" text="Ok" />
    </children>
 </AnchorPane>

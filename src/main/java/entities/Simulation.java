@@ -1,10 +1,10 @@
 package entities;
 
+import datatypes.FollowedAnimalStatisticsContainer;
 import datatypes.Genotype;
-import datatypes.OneDayStatistics;
+import datatypes.StatisticsContainer;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalStateObserver;
-import datatypes.observer.IPlantStateObserver;
 import managers.StatisticsManager;
 
 import java.util.*;
@@ -68,6 +68,10 @@ public class Simulation implements IAnimalStateObserver {
         return statisticsManager.getFollowedAnimal();
     }
 
+    public FollowedAnimalStatisticsContainer getFollowedAnimalStatistics() {
+        return statisticsManager.getFollowedAnimalStatistics();
+    }
+
     @Override
     public String toString() {
         return "Simulation{" +
@@ -79,10 +83,8 @@ public class Simulation implements IAnimalStateObserver {
     }
 
     // Mutators
-
     public void setFollowedAnimal(Animal animal) {
         statisticsManager.setFollowedAnimal(animal);
-        System.out.println("Animal is being followed");
     }
 
 
@@ -201,11 +203,12 @@ public class Simulation implements IAnimalStateObserver {
         }
     }
 
-    public OneDayStatistics getCurrentDayStatistics() {
-        return new OneDayStatistics(statisticsManager.getNumberOfAnimals(),
-                statisticsManager.getNumberOfPlants(), statisticsManager.getMeanEnergyLevel(),
-                statisticsManager.getMeanLifespan(), statisticsManager.getMeanNumberOfChildren(),
-                statisticsManager.getCurrentDay(), statisticsManager.getGenesCount());
+    public StatisticsContainer getCurrentDayStatistics() {
+        return statisticsManager.getCurrentDayStatistics();
+    }
+
+    public StatisticsContainer getOverallStatistics() {
+        return statisticsManager.getOverallStatistics();
     }
 
     @Override

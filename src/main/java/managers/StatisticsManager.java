@@ -1,6 +1,8 @@
 package managers;
 
 import datatypes.Direction;
+import datatypes.FollowedAnimalStatisticsContainer;
+import datatypes.StatisticsContainer;
 import datatypes.observer.IAnimalEnergyObserver;
 import datatypes.observer.IAnimalStateObserver;
 import datatypes.observer.IPlantStateObserver;
@@ -29,6 +31,14 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
     // Statistics of plants
     private int numberOfPlants;
 
+    // Overall statistics
+    private int overallAnimalPopulation;
+    private int overallNumberOfPlants;
+    private final Map<Direction, Integer> overallGenesCount;
+    private float sumOfMeanEnergyLevels;
+    private float sumOfMeanLifespans;
+    private float sumOfMeanNumberOfChildren;
+
     private int currentDay;
     private Animal lastAddedAnimal;
 
@@ -41,13 +51,23 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
         numberOfDeadAnimals = 0;
         numberOfPlants = 0;
         aliveAnimalsChildrenCountSum = 0;
+        // If set to -1 then the followed animal is still alive
+        followedAnimalDeathDate = -1;
+
+        overallAnimalPopulation = 0;
+        overallNumberOfPlants = 0;
+        sumOfMeanEnergyLevels = 0;
+        sumOfMeanLifespans = 0;
+        sumOfMeanNumberOfChildren = 0;
 
         genesCount = new LinkedHashMap<>();
         animalsBornDateMap = new HashMap<>();
         numberOfChildren = new HashMap<>();
+        overallGenesCount = new HashMap<>();
 
         for(Direction direction : Direction.values()) {
             genesCount.put(direction, 0);
+            overallGenesCount.put(direction, 0);
         }
     }
 
@@ -59,6 +79,9 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
 
     public void incrementDay() {
         currentDay += 1;
+        sumOfMeanEnergyLevels += getMeanEnergyLevel();
+        sumOfMeanLifespans += getMeanLifespan();
+        sumOfMeanNumberOfChildren += getMeanNumberOfChildren();
     }
 
     public Animal getFollowedAnimal() {
@@ -67,10 +90,6 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
 
     public int getCurrentDay() {
         return currentDay;
-    }
-
-    public float getMeanEnergy() {
-        return (float) energySum / numberOfAnimals;
     }
 
     public int getNumberOfAnimals() {
@@ -89,6 +108,14 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
         return (float) energySum / numberOfAnimals;
     }
 
+    public float getMeanNumberOfChildren() {
+        return (float) aliveAnimalsChildrenCountSum / numberOfAnimals;
+    }
+
+    public Map<Direction, Integer> getGenesCount() {
+        return genesCount;
+    }
+
     public float getMeanLifespan() {
         if(lifespanSum == 0) {
             return currentDay;
@@ -97,12 +124,22 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
         }
     }
 
-    public float getMeanNumberOfChildren() {
-        return (float) aliveAnimalsChildrenCountSum / numberOfAnimals;
+    public StatisticsContainer getCurrentDayStatistics() {
+        return new StatisticsContainer(numberOfAnimals,
+                numberOfPlants, getMeanEnergyLevel(),
+                getMeanLifespan(), getMeanNumberOfChildren(),
+                currentDay, genesCount);
     }
 
-    public Map<Direction, Integer> getGenesCount() {
-        return genesCount;
+    public FollowedAnimalStatisticsContainer getFollowedAnimalStatistics() {
+        return new FollowedAnimalStatisticsContainer(followedAnimalChildren.size(), followedAnimalDescendants.size(),
+                followedAnimalDeathDate);
+    }
+
+    public StatisticsContainer getOverallStatistics() {
+        return new StatisticsContainer(overallAnimalPopulation, overallNumberOfPlants,
+                sumOfMeanEnergyLevels / currentDay, sumOfMeanLifespans / currentDay,
+                sumOfMeanNumberOfChildren / currentDay, currentDay, overallGenesCount);
     }
 
     public void addAnimal(Animal animal) {
@@ -113,13 +150,14 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
 
         // Updating statistics
         energySum += animal.getEnergy();
-        System.out.println(animal.getEnergy());
         numberOfAnimals += 1;
+        overallAnimalPopulation += 1;
 
         Map<Direction, Integer> genesCount = animal.getGenesCount();
 
         for(Direction direction : genesCount.keySet()) {
             this.genesCount.put(direction, this.genesCount.get(direction) + genesCount.get(direction));
+            overallGenesCount.put(direction, overallGenesCount.get(direction) + genesCount.get(direction));
         }
     }
 
@@ -176,5 +214,6 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
     @Override
     public void newPlant(Plant newPlant) {
         numberOfPlants += 1;
+        overallNumberOfPlants += 1;
     }
 }

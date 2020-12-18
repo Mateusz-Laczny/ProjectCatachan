@@ -1,6 +1,7 @@
 package application.controllers;
 
-import datatypes.OneDayStatistics;
+import datatypes.FollowedAnimalStatisticsContainer;
+import datatypes.StatisticsContainer;
 import datatypes.ui.Cell;
 import datatypes.ui.Grid;
 import datatypes.Direction;
@@ -20,8 +21,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import util.FileParser;
 import util.Parameters;
-import util.ParametersParser;
 
 import java.io.IOException;
 import java.net.URL;
@@ -36,6 +37,7 @@ public class MainApplicationController extends AbstractController implements Ini
     public Button addMapButton;
     public Button loadButton;
     public Button followButton;
+    public Button saveStatisticsButton;
 
     public Pane mapPane;
     // Statistics
@@ -53,9 +55,9 @@ public class MainApplicationController extends AbstractController implements Ini
     // Main simulation manager
     private Simulation simulationManager;
     // Simulation thread
-    Thread taskThread;
+    Thread simulationThread;
     // For parameters parsing
-    private ParametersParser parametersParser;
+    private FileParser jsonParser;
 
     // Parameters of the simulation
     Parameters parameters;
@@ -68,6 +70,10 @@ public class MainApplicationController extends AbstractController implements Ini
 
     // Followed animal
     private Animal followedAnimal;
+    // If set to -1, then we don't have to show any popups
+    private int daysToShowStatisticsPopup;
+    // Same as above
+    private int daysToSaveStatisticsToAFile;
     // Currently selected Animal
     private Animal selectedAnimal;
 
@@ -75,14 +81,38 @@ public class MainApplicationController extends AbstractController implements Ini
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        parametersParser = new ParametersParser();
+        jsonParser = new FileParser();
+        daysToShowStatisticsPopup = -1;
+        daysToSaveStatisticsToAFile = -1;
 
-        startButton.setOnAction(event -> runSimulation());
+        startButton.setOnAction(event -> {
+            pauseButton.setDisable(false);
+            stopButton.setDisable(false);
+            saveStatisticsButton.setDisable(false);
+            startButton.setDisable(true);
+
+            Cell.canBeClicked = false;
+
+            if(simulationThread != null && simulationThread.isAlive()) {
+                simulationThread.interrupt();
+            }
+
+            // Clearing the charts
+            energyAndChildrenChart.getData().clear();
+            populationsChart.getData().clear();
+            genesChart.getData().clear();
+
+            // Resetting the countdown until statistics box
+            daysToShowStatisticsPopup = -1;
+
+            runSimulation();
+        });
 
         pauseButton.setOnAction(event -> {
             Cell.canBeClicked = true;
             running = false;
             followButton.setDisable(false);
+            resumeButton.setDisable(false);
         });
 
         resumeButton.setOnAction(event -> {
@@ -91,8 +121,15 @@ public class MainApplicationController extends AbstractController implements Ini
         });
 
         stopButton.setOnAction(event -> {
-            if(taskThread != null) {
-                taskThread.interrupt();
+            resumeButton.setDisable(true);
+            pauseButton.setDisable(true);
+            stopButton.setDisable(true);
+            saveStatisticsButton.setDisable(true);
+            followButton.setDisable(true);
+            startButton.setDisable(false);
+
+            if(simulationThread != null) {
+                simulationThread.interrupt();
             }
         });
 
@@ -105,6 +142,7 @@ public class MainApplicationController extends AbstractController implements Ini
         });
 
         loadButton.setOnAction(event -> {
+            startButton.setDisable(false);
             load();
         });
 
@@ -112,25 +150,28 @@ public class MainApplicationController extends AbstractController implements Ini
             if(selectedAnimal != null) {
                 followedAnimal = selectedAnimal;
                 simulationManager.setFollowedAnimal(followedAnimal);
+
+                Optional<Integer> dayToShowPopup = loadNumber("Give number of days");
+                if(dayToShowPopup.isPresent() && dayToShowPopup.get() > 0) {
+                    daysToShowStatisticsPopup = dayToShowPopup.get();
+                } else {
+                    showAlertBox("Ups! Wrong value!");
+                }
+            }
+        });
+
+        saveStatisticsButton.setOnAction(event -> {
+            Optional<Integer> dayToShowPopup = loadNumber("Give number of days");
+
+            if(dayToShowPopup.isPresent() && dayToShowPopup.get() > 0) {
+                daysToSaveStatisticsToAFile = dayToShowPopup.get();
+            } else {
+                showAlertBox("Ups! Wrong value!");
             }
         });
     }
 
     private void runSimulation() {
-        // Disabling the option to highlight cells
-        Cell.canBeClicked = false;
-        // Disabling the follow button
-        followButton.setDisable(true);
-
-        if(taskThread != null && taskThread.isAlive()) {
-            taskThread.interrupt();
-        }
-
-        // Clearing the charts
-        energyAndChildrenChart.getData().clear();
-        populationsChart.getData().clear();
-        genesChart.getData().clear();
-
         if(parameters != null) {
             Optional<Integer> startingNumberOfAnimalsOptional = loadNumber("Choose the starting number of animals");
 
@@ -145,7 +186,7 @@ public class MainApplicationController extends AbstractController implements Ini
             genesChartController = new BarChartController(genesChart);
 
 
-            taskThread = new Thread(new Runnable() {
+            simulationThread = new Thread(new Runnable() {
                 public void run() {
                     while(!Thread.currentThread().isInterrupted()){
                         Platform.runLater(new Runnable() {
@@ -169,7 +210,7 @@ public class MainApplicationController extends AbstractController implements Ini
                                         refreshMap();
 
                                         // Getting the statistics at the ned of the day
-                                        OneDayStatistics dayStatistics = simulationManager.getCurrentDayStatistics();
+                                        StatisticsContainer dayStatistics = simulationManager.getCurrentDayStatistics();
 
                                         populationsChartController.addSeriesEntry("Animals",
                                                 dayStatistics.currentDay, dayStatistics.numberOfAnimals);
@@ -195,12 +236,37 @@ public class MainApplicationController extends AbstractController implements Ini
 
                                         genesChartController.updateSeries(genesCountWithStringLabels);
 
+                                        if(daysToShowStatisticsPopup == 0) {
+                                            running = false;
+                                            followButton.setDisable(false);
+
+                                            daysToShowStatisticsPopup = -1;
+                                            showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
+                                        } else if(daysToShowStatisticsPopup != -1){
+                                            daysToShowStatisticsPopup -= 1;
+                                        }
+
+                                        if(daysToSaveStatisticsToAFile == 0) {
+                                            running = false;
+                                            followButton.setDisable(false);
+
+                                            daysToSaveStatisticsToAFile -= 1;
+                                            jsonParser.exportStatistics(simulationManager.getOverallStatistics());
+                                            showAlertBox("Statistics saved");
+                                        } else if(daysToSaveStatisticsToAFile != -1) {
+                                            daysToSaveStatisticsToAFile -= 1;
+                                        }
+
                                         if(simulationManager.getNumberOfAnimals() == 0) {
                                             running = false;
+
+                                            if(daysToShowStatisticsPopup != -1) {
+                                                showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
+                                            }
                                         }
                                     } catch (Exception exception) {
                                         exception.printStackTrace();
-                                        taskThread.interrupt();
+                                        simulationThread.interrupt();
                                         showAlertBox("Ups! Something went wrong " + exception.getMessage());
                                     }
                                 }
@@ -208,7 +274,7 @@ public class MainApplicationController extends AbstractController implements Ini
                         });
 
                         try{
-                            Thread.sleep(90);
+                            Thread.sleep(500);
                         } catch(InterruptedException e){
                             break;
                         }
@@ -221,11 +287,50 @@ public class MainApplicationController extends AbstractController implements Ini
                 if (simulationManager != null) {
                     simulationManager.generateAnimalsAtRandomPositions(startingNumberOfAnimals);
                     refreshMap();
-                    taskThread.start();
+                    simulationThread.start();
                 }
             }
         }
 
+    }
+
+    private void showStatisticsWindow(FollowedAnimalStatisticsContainer statistics) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StatisticsPopup.fxml"));
+        Parent layout;
+
+        try {
+            layout = loader.load();
+            Scene scene = new Scene(layout);
+            Stage popupStage = new Stage();
+
+            StatisticsPopupController statisticsPopupController = loader.getController();
+            statisticsPopupController.setStage(popupStage);
+
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("Death Date: ");
+
+            if(statistics.deathDay == -1) {
+                builder.append("Still alive \n");
+            } else {
+                builder.append(statistics.deathDay).append("\n");
+            }
+
+            builder.append("Number of children: ").append(statistics.numberOfChildren).append("\n");
+            builder.append("Number of descendants: ").append(statistics.numberOfDescendants).append("\n");
+
+            statisticsPopupController.setStatisticsText(builder.toString());
+
+            if(this.main!=null) {
+                popupStage.initOwner(main.getPrimaryStage());
+            }
+
+            popupStage.initModality(Modality.WINDOW_MODAL);
+            popupStage.setScene(scene);
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Optional<Integer> loadNumber(String title) {
@@ -237,7 +342,8 @@ public class MainApplicationController extends AbstractController implements Ini
         try {
             layout = loader.load();
             Scene scene = new Scene(layout);
-            //scene.getStylesheets().add(getClass().getResource("InputBoxStyle.css").toExternalForm());
+
+
             Stage popupStage = new Stage();
 
             NumberInputAlertBoxController numberInputAlertBoxController = loader.getController();
@@ -270,7 +376,7 @@ public class MainApplicationController extends AbstractController implements Ini
         String currentDirectory = System.getProperty("user.dir");
 
         try {
-            parameters = parametersParser.readParameters(currentDirectory + "/parameters.json");
+            parameters = jsonParser.readParameters(currentDirectory + "/parameters.json");
             simulationManager = new Simulation(parameters.width, parameters.height, parameters.startEnergy,
                     parameters.plantEnergy, parameters.moveEnergy, parameters.jungleRatio, 32, 8);
 
@@ -339,6 +445,8 @@ public class MainApplicationController extends AbstractController implements Ini
                     statisticsList.getItems().add("Gene of type " + direction + ": " + geneCount.get(direction));
                 }
             }
+        } else {
+            selectedAnimal = null;
         }
     }
 
@@ -347,9 +455,9 @@ public class MainApplicationController extends AbstractController implements Ini
     }
 
     public void close() {
-        if(taskThread != null) {
-            if(taskThread.isAlive()) {
-                taskThread.interrupt();
+        if(simulationThread != null) {
+            if(simulationThread.isAlive()) {
+                simulationThread.interrupt();
             }
         }
     }
