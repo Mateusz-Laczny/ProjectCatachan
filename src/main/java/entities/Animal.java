@@ -5,7 +5,6 @@ import datatypes.Direction;
 import datatypes.Genotype;
 import datatypes.Vector2d;
 import datatypes.observer.*;
-import util.randomMock.IRandomGenerator;
 
 import java.util.*;
 
@@ -18,6 +17,9 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     private final Set<IAnimalStateObserver> stateObservers;
     private final Set<IAnimalPositionObserver> positionObservers;
     private final Set<IAnimalEnergyObserver> energyObservers;
+
+    // Used for testing
+    private Random random;
 
     /**
      * Constructor for an animal with defined attributes and a random orientation
@@ -36,7 +38,7 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
             throws IllegalArgumentException{
         super(initialPosition, true, 0);
 
-        Random random = new Random();
+        random = new Random();
 
         if(startingEnergy < 0) {
             throw new IllegalArgumentException("Starting energy must be greater than 0");
@@ -89,27 +91,17 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     }
 
     /**
-     * Constructor for testing, which accepts a mockup random class
-     * @param map
-     *        Map to place the animal on
-     * @param initialPosition
-     *      Initial position of the animal
-     * @param startingEnergy
-     *      Starting energy of the animal
-     * @param firstParent
-     *      Animal object representing the parent of this animal
-     * @param secondParent
-     *      Animal object representing the parent of this animal
-     * @param mockup
-     *      Mockup class inheriting form IRandomGenerator
+     * Method for setting a fake random generator
+     * Useful for testing. Use with caution
+     *
+     * @param randomGenerator
+     *      Class mocking the Random class - must overwrite nextInt method
      */
-    public Animal(WorldMap map, Vector2d initialPosition, int startingEnergy, Animal firstParent, Animal secondParent,
-                  IRandomGenerator mockup) {
-        this(map, initialPosition, startingEnergy, new Genotype(firstParent.genotype, secondParent.genotype));
+    public void setRandomGenerator(Random randomGenerator) {
+        random = randomGenerator;
     }
 
     // Accessors
-
     public Direction getOrientation() {
         return orientation;
     }
@@ -120,10 +112,6 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
 
     public Map<Direction, Integer> getGenesCount() {
         return genotype.getGenesCount();
-    }
-
-    public int getGenotypeLength() {
-        return genotype.getGenotypeLength();
     }
 
     @Override

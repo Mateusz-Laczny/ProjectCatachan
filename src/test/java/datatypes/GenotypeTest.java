@@ -1,10 +1,10 @@
 package datatypes;
 
 import org.junit.jupiter.api.Test;
-import util.randomMock.IRandomGenerator;
 import util.randomMock.MockRandom;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +23,7 @@ class GenotypeTest {
         List<Integer> genotype1 = List.of(0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3,
                 3, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7);
 
-        IRandomGenerator mockup1 = new MockRandom(genotype1);
+        Random mockup1 = new MockRandom(genotype1);
         Genotype test = new Genotype(32, 8, mockup1);
 
         assertEquals("Genotype{genes=[0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, " +
@@ -39,8 +39,8 @@ class GenotypeTest {
         List<Integer> genotype2 = List.of(0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
                 2, 3, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7);
 
-        IRandomGenerator mockup1 = new MockRandom(genotype1);
-        IRandomGenerator mockup2 = new MockRandom(genotype2);
+        Random mockup1 = new MockRandom(genotype1);
+        Random mockup2 = new MockRandom(genotype2);
 
         List<Integer> testValuesForGenotypeGeneration = List.of(1, 5);
     }

@@ -32,7 +32,7 @@ public class LineChartController {
 
     public void addSeriesEntry(String seriesName, Number xValue, Number yValue) throws NullPointerException {
         XYChart.Series<String, Number> series = seriesMap.get(seriesName);
-        if(series.getData().size() > chart.getWidth()) {
+        if(series.getData().size() > chart.getWidth() / 3) {
             series.getData().remove(0);
         }
 

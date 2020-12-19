@@ -1,8 +1,9 @@
 package util.randomMock;
 
 import java.util.List;
+import java.util.Random;
 
-public class MockRandom implements IRandomGenerator{
+public class MockRandom extends Random {
     private final List<Integer> values;
     private int currentIndex;
 

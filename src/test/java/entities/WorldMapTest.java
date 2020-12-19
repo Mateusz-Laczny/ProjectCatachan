@@ -2,10 +2,10 @@ package entities;
 
 import datatypes.Vector2d;
 import org.junit.jupiter.api.Test;
-import util.randomMock.IRandomGenerator;
 import util.randomMock.MockRandom;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,15 +25,23 @@ class WorldMapTest {
     }
 
     @Test
-    public void correctlyGeneratesGrass() {
+    public void correctlyGeneratesPlants() {
         List<Integer> valuesForRandom = List.of(0, 0);
-        IRandomGenerator mockup = new MockRandom(valuesForRandom);
+        Random mockup = new MockRandom(valuesForRandom);
 
-        WorldMap map = new WorldMap(12, 12, 0.5, mockup);
-        map.generatePlants();
+        WorldMap map = new WorldMap(12, 12, 0.5);
+        map.setRandomGenerator(mockup);
+        Simulation simulation = new Simulation(map, 10, 10, 10,
+                10, 10);
+        simulation.generatePlants();
 
         assertTrue(map.plantAt(Vector2d.zero()).isPresent());
         assertTrue(map.plantAt(new Vector2d(3,3)).isPresent());
+    }
+
+    @Test
+    public void CorrectlyRemovesPlants() {
+        
     }
 
 //    @Test

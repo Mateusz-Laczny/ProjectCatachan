@@ -3,8 +3,6 @@ package entities;
 import datatypes.Vector2d;
 import datatypes.observer.IAnimalPositionObserver;
 import datatypes.observer.IPlantStateObserver;
-import util.randomMock.IRandomGenerator;
-import util.randomMock.RealRandom;
 
 import java.util.*;
 
@@ -30,11 +28,11 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     private final Map<Vector2d, Plant> plants;
 
     // TODO WYRZUCIĆ I ZMIENIĆ NA ZBIORY
-    private final List<Vector2d> freePositionsSteppe;
-    private final List<Vector2d> freePositionsJungle;
+    private final Set<Vector2d> freePositionsSteppe;
+    private final Set<Vector2d> freePositionsJungle;
 
     // Used for testing
-    private IRandomGenerator random;
+    private Random random;
 
     /**
      * Creates a map with given dimensions
@@ -85,8 +83,8 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         animalsList = new LinkedList<>();
         animals = new HashMap<>();
         plants = new HashMap<>();
-        freePositionsSteppe = new LinkedList<>();
-        freePositionsJungle = new LinkedList<>();
+        freePositionsSteppe = new HashSet<>();
+        freePositionsJungle = new HashSet<>();
 
         for(int i = 0; i < width; i++) {
             for(int j = 0; j < height; j++) {
@@ -100,33 +98,21 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
             }
         }
 
-        random = new RealRandom();
+        random = new Random();
     }
 
     /**
-     * Constructor used for testing
-     * @param width
-     *      Width of the map
-     * @param height
-     *      Height of the map
-     * @param jungleRatio
-     *      Ration of jungle dimensions to overall map dimensions
-     *      eg. for jungleRatio = 0.5 the jungle width and height
-     *      will equal the half of corresponding map dimensions
-     * @param mockup
-     *      IRandomGenerator object mocking random behaviour (for test purposes)
+     * Method for setting a fake random generator
+     * Useful for testing
      *
-     * @throws IllegalArgumentException
-     *      If given map dimensions are incorrect
+     * @param randomGenerator
+     *      Clas mocking the Random class - must overwrite nextInt method
      */
-    public WorldMap(int width, int height, double jungleRatio, IRandomGenerator mockup)
-            throws IllegalArgumentException {
-        this(width, height, jungleRatio);
-        random = mockup;
+    public void setRandomGenerator(Random randomGenerator) {
+        random = randomGenerator;
     }
 
     //Accessors
-
     public Vector2d[] getMapCorners() {
         return new Vector2d[]{mapLowerLeftCorner, mapUpperRightCorner};
     }
@@ -155,6 +141,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         return animalsList.size();
     }
 
+
     /**
      * Returns a random position from the inside of the map
      *
@@ -172,8 +159,10 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
 
     public Optional<Vector2d> getRandomPositionFromJungle() {
         if(!freePositionsJungle.isEmpty()) {
-            Collections.shuffle(freePositionsJungle);
-            return Optional.of(freePositionsJungle.get(0));
+            List<Vector2d> freePositionsJungleArrayList = new ArrayList<>(freePositionsJungle);
+
+            Collections.shuffle(freePositionsJungleArrayList);
+            return Optional.of(freePositionsJungleArrayList.get(0));
         } else {
             return Optional.empty();
         }
@@ -181,8 +170,10 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
 
     public Optional<Vector2d> getRandomPositionFromSteppe() {
         if(!freePositionsSteppe.isEmpty()) {
-            Collections.shuffle(freePositionsSteppe);
-            return Optional.of(freePositionsSteppe.get(0));
+            List<Vector2d> freePositionsSteppeArrayList = new ArrayList<>(freePositionsSteppe);
+
+            Collections.shuffle(freePositionsSteppeArrayList);
+            return Optional.of(freePositionsSteppeArrayList.get(0));
         } else {
             return Optional.empty();
         }
@@ -280,25 +271,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
                 ", mapLowerLeftCorner=" + mapLowerLeftCorner +
                 ", mapUpperRightCorner=" + mapUpperRightCorner +
                 '}';
-    }
-
-    /**
-     * Helper function for visual testing
-     */
-    public void printMap() {
-        for(int i = height - 1; i >= 0; i--) {
-            for(int j = width - 1; j >= 0; j--) {
-                Vector2d currentPosition = new Vector2d(j, i);
-
-                if(isInsideJungle(currentPosition)) {
-                    System.out.print(" X ");
-                } else {
-                    System.out.print(" 0 ");
-                }
-            }
-
-            System.out.print('\n');
-        }
     }
 
     // Methods
@@ -404,7 +376,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         removeFromPossiblePositionsForPlants(newPlant.getPosition());
     }
 
-    // TODO WYRZUCIĆ
     /**
      * Checks whether the given position is not occupied by any plant or animal. If it's not,
      * adds the position to the corresponding free positions list.
@@ -415,13 +386,9 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     private void updatePositionStatusForPlants(Vector2d position) {
         if(!animals.containsKey(position) && plantAt(position).isEmpty()) {
             if (isInsideJungle(position)) {
-                if (!freePositionsJungle.contains(position)) {
-                    freePositionsJungle.add(position);
-                }
+                freePositionsJungle.add(position);
             } else {
-                if (!freePositionsSteppe.contains(position)) {
-                    freePositionsSteppe.add(position);
-                }
+                freePositionsSteppe.add(position);
             }
         }
     }

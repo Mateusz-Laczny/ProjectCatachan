@@ -1,8 +1,5 @@
 package datatypes;
 
-import util.randomMock.IRandomGenerator;
-import util.randomMock.RealRandom;
-
 import java.util.*;
 
 
@@ -10,7 +7,7 @@ public class Genotype {
     private final int[] genes;
     private final int geneTypesNumber;
     // For testing purposes
-    private final IRandomGenerator random;
+    private final Random random;
 
     /**
      * Creates a correct, random genome. A correct genome must include at least one occurrence of every gene type
@@ -32,7 +29,7 @@ public class Genotype {
         if (geneTypesNumber < 0 || geneTypesNumber > lengthOfGenome) {
             throw new IllegalArgumentException("Incorrect number of gene types");
         }
-        random = new RealRandom();
+        random = new Random();
 
         this.geneTypesNumber = geneTypesNumber;
         genes = new int[lengthOfGenome];
@@ -56,7 +53,7 @@ public class Genotype {
         geneTypesNumber = firstParentGenotype.getGeneTypesNumber();
         genes = new int[firstParentGenotype.getGenotypeLength()];
 
-        random = new RealRandom();
+        random = new Random();
 
         if(random.nextInt(2) == 0) {
             createGenotypeFromParents(firstParentGenotype, secondParentGenotype);
@@ -76,7 +73,7 @@ public class Genotype {
      * @throws IllegalArgumentException
      *          If the given parameters are incorrect
      */
-    public Genotype(Genotype firstParentGenotype, Genotype secondParentGenotype, IRandomGenerator mockupRandom)
+    public Genotype(Genotype firstParentGenotype, Genotype secondParentGenotype, Random mockupRandom)
             throws IllegalArgumentException {
 
         checkParametersCorrectness(firstParentGenotype, secondParentGenotype);
@@ -106,7 +103,7 @@ public class Genotype {
      * @throws IllegalArgumentException
      *          If the given parameters are incorrect
      */
-    public Genotype(int lengthOfGenome, int geneTypesNumber, IRandomGenerator mockupRandom)
+    public Genotype(int lengthOfGenome, int geneTypesNumber, Random mockupRandom)
             throws IllegalArgumentException{
         if (lengthOfGenome < 0) {
             throw new IllegalArgumentException("Genome length can't be negative");
