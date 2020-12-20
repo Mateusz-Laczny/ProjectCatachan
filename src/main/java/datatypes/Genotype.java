@@ -158,15 +158,9 @@ public class Genotype {
             parts.remove(partIndex);
 
             switch (chosenPart) {
-                case 1 -> {
-                    copyGenes(dominatingParent, 0, cutIndexes[1]);
-                }
-                case 2 -> {
-                    copyGenes(dominatingParent, cutIndexes[1] + 1, cutIndexes[2]);
-                }
-                case 3 -> {
-                    copyGenes(dominatingParent, cutIndexes[2] + 1, genes.length - 1);
-                }
+                case 1 -> copyGenes(dominatingParent, 0, cutIndexes[1]);
+                case 2 -> copyGenes(dominatingParent, cutIndexes[1] + 1, cutIndexes[2]);
+                case 3 -> copyGenes(dominatingParent, cutIndexes[2] + 1, genes.length - 1);
             }
         }
 
@@ -174,15 +168,9 @@ public class Genotype {
         int remainingPart = parts.get(0);
 
         switch (remainingPart) {
-            case 1 -> {
-                copyGenes(otherParent, 0, cutIndexes[1]);
-            }
-            case 2 -> {
-                copyGenes(otherParent, cutIndexes[1] + 1, cutIndexes[2]);
-            }
-            case 3 -> {
-                copyGenes(otherParent, cutIndexes[2] + 1, genes.length - 1);
-            }
+            case 1 -> copyGenes(otherParent, 0, cutIndexes[1]);
+            case 2 -> copyGenes(otherParent, cutIndexes[1] + 1, cutIndexes[2]);
+            case 3 -> copyGenes(otherParent, cutIndexes[2] + 1, genes.length - 1);
         }
 
         // Genome can be out of order after the slicing
@@ -243,8 +231,6 @@ public class Genotype {
         for(int gene : genes) {
             geneTypeCount[gene] += 1;
         }
-
-        int currentGeneType = 0;
 
         // We find genes that can be replaced
         List<Integer> genesAllowedToChange = new LinkedList<>();

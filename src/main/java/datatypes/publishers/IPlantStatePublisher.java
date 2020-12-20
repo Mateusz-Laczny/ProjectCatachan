@@ -1,13 +1,15 @@
-package datatypes.observer;
+package datatypes.publishers;
 
-public interface IAnimalStatePublisher {
+import datatypes.observers.IPlantStateObserver;
+
+public interface IPlantStatePublisher {
     /**
      * Adds the given observer to the observer list of this object
      *
      * @param observer
      *          Object implementing IPositionChangeObserver
      */
-    void addStateObserver(IAnimalStateObserver observer);
+    void addPlantObserver(IPlantStateObserver observer);
 
     /**
      * Removes the given observer from the observer list of this object.
@@ -16,5 +18,5 @@ public interface IAnimalStatePublisher {
      * @param observer
      *          Object implementing IPositionChangeObserver
      */
-    void removeStateObserver(IAnimalStateObserver observer);
+    void removePlantObserver(IPlantStateObserver observer);
 }

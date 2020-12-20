@@ -4,7 +4,10 @@ import datatypes.AbstractMapElement;
 import datatypes.Direction;
 import datatypes.Genotype;
 import datatypes.Vector2d;
-import datatypes.observer.*;
+import datatypes.observers.*;
+import datatypes.publishers.IAnimalEnergyPublisher;
+import datatypes.publishers.IAnimalPositionPublisher;
+import datatypes.publishers.IAnimalStatePublisher;
 
 import java.util.*;
 
@@ -134,7 +137,6 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     public void move(Direction direction) {
         setPosition(direction.toUnitVector());
     }
-
 
     public void randomMove(int moveEnergy) {
         orientation = genotype.getRandomDirection();

@@ -1,4 +1,6 @@
-package datatypes;
+package datatypes.containers;
+
+import datatypes.Direction;
 
 import java.util.Map;
 

@@ -1,9 +1,8 @@
-package application.controllers;
+package application.controllers.charts;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 
-import java.util.List;
 import java.util.Map;
 
 public class BarChartController {

@@ -1,4 +1,4 @@
-package application.controllers;
+package application.controllers.charts;
 
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;

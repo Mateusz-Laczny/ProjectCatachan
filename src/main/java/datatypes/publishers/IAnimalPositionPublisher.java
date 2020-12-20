@@ -1,4 +1,6 @@
-package datatypes.observer;
+package datatypes.publishers;
+
+import datatypes.observers.IAnimalPositionObserver;
 
 public interface IAnimalPositionPublisher {
     /**

@@ -1,11 +1,15 @@
 package application.controllers;
 
-import datatypes.FollowedAnimalStatisticsContainer;
-import datatypes.StatisticsContainer;
-import datatypes.ui.Cell;
-import datatypes.ui.Grid;
+import application.controllers.alertBox.NumberInputAlertBoxController;
+import application.controllers.alertBox.StatisticsPopupController;
+import application.controllers.charts.BarChartController;
+import application.controllers.charts.LineChartController;
 import datatypes.Direction;
 import datatypes.Vector2d;
+import datatypes.containers.FollowedAnimalStatisticsContainer;
+import datatypes.containers.StatisticsContainer;
+import datatypes.ui.Cell;
+import datatypes.ui.Grid;
 import entities.Animal;
 import entities.Simulation;
 import javafx.application.Platform;
@@ -17,7 +21,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -84,7 +88,6 @@ public class MainApplicationController extends AbstractController implements Ini
         startButton.setOnAction(event -> {
             pauseButton.setDisable(false);
             stopButton.setDisable(false);
-            saveStatisticsButton.setDisable(false);
             startButton.setDisable(true);
 
             Cell.canBeClicked = false;
@@ -102,6 +105,9 @@ public class MainApplicationController extends AbstractController implements Ini
             // Resetting the countdown until statistics box
             daysToShowStatisticsPopup = -1;
 
+            // Unhighlighting all cells
+            grid.unhighlightAll();
+
             runSimulation();
         });
 
@@ -110,10 +116,13 @@ public class MainApplicationController extends AbstractController implements Ini
             running = false;
             followButton.setDisable(false);
             resumeButton.setDisable(false);
+            saveStatisticsButton.setDisable(false);
         });
 
         resumeButton.setOnAction(event -> {
             followButton.setDisable(true);
+            resumeButton.setDisable(true);
+            saveStatisticsButton.setDisable(true);
             running = true;
         });
 
@@ -185,98 +194,78 @@ public class MainApplicationController extends AbstractController implements Ini
             genesChartController = new BarChartController(genesChart);
 
 
-            simulationThread = new Thread(new Runnable() {
-                public void run() {
-                    while(!Thread.currentThread().isInterrupted()){
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (running) {
-                                    try {
-                                        simulationManager.removeDeadAnimals();
-                                        refreshMap();
+            simulationThread = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()){
+                    Platform.runLater(() -> {
+                        if (running) {
+                            try {
+                                simulationManager.simulateDay();
 
-                                        simulationManager.moveAnimals();
-                                        refreshMap();
+                                refreshMap();
 
-                                        simulationManager.eatPlants();
-                                        refreshMap();
+                                // Getting the statistics at the ned of the day
+                                StatisticsContainer dayStatistics = simulationManager.getCurrentDayStatistics();
 
-                                        simulationManager.reproduceAnimals();
-                                        refreshMap();
+                                populationsAndEnergyChartController.addSeriesEntry("Animals",
+                                        dayStatistics.currentDay, dayStatistics.numberOfAnimals);
+                                populationsAndEnergyChartController.addSeriesEntry("Plants",
+                                        dayStatistics.currentDay, dayStatistics.numberOfPlants);
+                                populationsAndEnergyChartController.addSeriesEntry("Mean Energy",
+                                        dayStatistics.currentDay, dayStatistics.meanEnergyLevel);
+                                childrenChartController.addSeriesEntry("Avg. number of children",
+                                        dayStatistics.currentDay, dayStatistics.meanNumberOfChildren);
+                                lifespanChartController.addSeriesEntry("Mean Lifespan",
+                                        dayStatistics.currentDay, dayStatistics.meanLifespan);
 
-                                        simulationManager.generatePlants();
-                                        refreshMap();
+                                Map<Direction, Integer> genesCount = dayStatistics.genesCount;
+                                Map<String, Number> genesCountWithStringLabels = new LinkedHashMap<>();
 
-                                        // Getting the statistics at the ned of the day
-                                        StatisticsContainer dayStatistics = simulationManager.getCurrentDayStatistics();
+                                for(Direction direction : genesCount.keySet()) {
+                                    genesCountWithStringLabels.put(direction.toString(), genesCount.get(direction));
+                                }
 
-                                        populationsAndEnergyChartController.addSeriesEntry("Animals",
-                                                dayStatistics.currentDay, dayStatistics.numberOfAnimals);
+                                genesChartController.updateSeries(genesCountWithStringLabels);
 
-                                        populationsAndEnergyChartController.addSeriesEntry("Plants",
-                                                dayStatistics.currentDay, dayStatistics.numberOfPlants);
+                                if(daysToShowStatisticsPopup == 0) {
+                                    running = false;
+                                    followButton.setDisable(false);
 
-                                        populationsAndEnergyChartController.addSeriesEntry("Mean Energy",
-                                                dayStatistics.currentDay, dayStatistics.meanEnergyLevel);
+                                    daysToShowStatisticsPopup = -1;
+                                    showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
+                                } else if(daysToShowStatisticsPopup != -1){
+                                    daysToShowStatisticsPopup -= 1;
+                                }
 
-                                        childrenChartController.addSeriesEntry("Avg. number of children",
-                                                dayStatistics.currentDay, dayStatistics.meanNumberOfChildren);
+                                if(daysToSaveStatisticsToAFile == 0) {
+                                    running = false;
+                                    followButton.setDisable(false);
 
-                                        lifespanChartController.addSeriesEntry("Mean Lifespan",
-                                                dayStatistics.currentDay, dayStatistics.meanLifespan);
+                                    daysToSaveStatisticsToAFile -= 1;
+                                    jsonParser.exportStatistics(simulationManager.getOverallStatistics());
+                                    showAlertBox("Statistics saved");
+                                } else if(daysToSaveStatisticsToAFile != -1) {
+                                    daysToSaveStatisticsToAFile -= 1;
+                                }
 
-                                        Map<Direction, Integer> genesCount = dayStatistics.genesCount;
-                                        Map<String, Number> genesCountWithStringLabels = new LinkedHashMap<>();
+                                if(simulationManager.getNumberOfAnimals() == 0) {
+                                    running = false;
 
-                                        for(Direction direction : genesCount.keySet()) {
-                                            genesCountWithStringLabels.put(direction.toString(), genesCount.get(direction));
-                                        }
-
-                                        genesChartController.updateSeries(genesCountWithStringLabels);
-
-                                        if(daysToShowStatisticsPopup == 0) {
-                                            running = false;
-                                            followButton.setDisable(false);
-
-                                            daysToShowStatisticsPopup = -1;
-                                            showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
-                                        } else if(daysToShowStatisticsPopup != -1){
-                                            daysToShowStatisticsPopup -= 1;
-                                        }
-
-                                        if(daysToSaveStatisticsToAFile == 0) {
-                                            running = false;
-                                            followButton.setDisable(false);
-
-                                            daysToSaveStatisticsToAFile -= 1;
-                                            jsonParser.exportStatistics(simulationManager.getOverallStatistics());
-                                            showAlertBox("Statistics saved");
-                                        } else if(daysToSaveStatisticsToAFile != -1) {
-                                            daysToSaveStatisticsToAFile -= 1;
-                                        }
-
-                                        if(simulationManager.getNumberOfAnimals() == 0) {
-                                            running = false;
-
-                                            if(daysToShowStatisticsPopup != -1) {
-                                                showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
-                                            }
-                                        }
-                                    } catch (Exception exception) {
-                                        exception.printStackTrace();
-                                        simulationThread.interrupt();
-                                        showAlertBox("Ups! Something went wrong " + exception.getMessage());
+                                    if(daysToShowStatisticsPopup != -1) {
+                                        showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
                                     }
                                 }
+                            } catch (Exception exception) {
+                                exception.printStackTrace();
+                                simulationThread.interrupt();
+                                showAlertBox("Ups! Something went wrong " + exception.getMessage());
                             }
-                        });
-
-                        try{
-                            Thread.sleep(90);
-                        } catch(InterruptedException e){
-                            break;
                         }
+                    });
+
+                    try{
+                        Thread.sleep(90);
+                    } catch(InterruptedException e){
+                        break;
                     }
                 }
             });

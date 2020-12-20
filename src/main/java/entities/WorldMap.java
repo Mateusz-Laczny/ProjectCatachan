@@ -1,8 +1,8 @@
 package entities;
 
 import datatypes.Vector2d;
-import datatypes.observer.IAnimalPositionObserver;
-import datatypes.observer.IPlantStateObserver;
+import datatypes.observers.IAnimalPositionObserver;
+import datatypes.observers.IPlantStateObserver;
 
 import java.util.*;
 
@@ -21,18 +21,13 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     private final Vector2d mapLowerLeftCorner;
     private final Vector2d mapUpperRightCorner;
 
-
     // Different collections
     private final List<Animal> animalsList;
     private final Map<Vector2d, List<Animal>> animals;
     private final Map<Vector2d, Plant> plants;
 
-    // TODO WYRZUCIĆ I ZMIENIĆ NA ZBIORY
     private final Set<Vector2d> freePositionsSteppe;
     private final Set<Vector2d> freePositionsJungle;
-
-    // Used for testing
-    private Random random;
 
     /**
      * Creates a map with given dimensions
@@ -97,19 +92,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
                 }
             }
         }
-
-        random = new Random();
-    }
-
-    /**
-     * Method for setting a fake random generator
-     * Useful for testing
-     *
-     * @param randomGenerator
-     *      Clas mocking the Random class - must overwrite nextInt method
-     */
-    public void setRandomGenerator(Random randomGenerator) {
-        random = randomGenerator;
     }
 
     //Accessors
@@ -140,7 +122,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     public int getNumberOfAnimals() {
         return animalsList.size();
     }
-
 
     /**
      * Returns a random position from the inside of the map
@@ -298,8 +279,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      */
     private void placeAt(Animal animal, Vector2d position) {
         if(isInsideMap(position)) {
-            //System.out.println("Animal is being placed at position " + position.toString());
-
             if (!animals.containsKey(position)) {
                 animals.put(position, new LinkedList<>());
             }
@@ -348,8 +327,6 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     @Override
     public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
         // Updating the animal map
-        //System.out.println("Position of animal previously at position " + oldPosition.toString() + "is being adjusted" +
-        //        "to " + newPosition.toString());
         List<Animal> animalList = animals.get(oldPosition);
         animalList.remove(animal);
 

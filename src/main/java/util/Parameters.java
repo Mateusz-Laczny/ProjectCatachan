@@ -1,5 +1,8 @@
 package util;
 
+/**
+ * Container for parameters imported from a JSON file
+ */
 public class Parameters {
     public int width;
     public int height;
@@ -7,10 +10,6 @@ public class Parameters {
     public int plantEnergy;
     public int moveEnergy;
     public double jungleRatio;
-
-    public Parameters() {
-
-    }
 
     @Override
     public String toString() {

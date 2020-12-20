@@ -1,4 +1,6 @@
-package datatypes.observer;
+package datatypes.publishers;
+
+import datatypes.observers.IAnimalEnergyObserver;
 
 public interface IAnimalEnergyPublisher {
     void addEnergyObserver(IAnimalEnergyObserver observer);

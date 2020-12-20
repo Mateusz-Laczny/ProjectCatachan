@@ -2,13 +2,12 @@ package entities;
 
 import datatypes.AbstractMapElement;
 import datatypes.Vector2d;
-import datatypes.observer.IPlantStateObserver;
-import datatypes.observer.IPlantStatePublisher;
+import datatypes.observers.IPlantStateObserver;
+import datatypes.publishers.IPlantStatePublisher;
 
 import java.util.HashSet;
 import java.util.Set;
 
-//TODO
 public class Plant extends AbstractMapElement implements IPlantStatePublisher {
     private final Set<IPlantStateObserver> observers;
 

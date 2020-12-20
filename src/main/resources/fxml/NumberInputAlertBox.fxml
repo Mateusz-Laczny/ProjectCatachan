@@ -6,15 +6,15 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="131.0" prefWidth="277.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.NumberInputAlertBoxController">
+<AnchorPane prefHeight="152.0" prefWidth="277.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.alertBox.NumberInputAlertBoxController">
    <children>
-      <Label fx:id="titleLabel" layoutX="16.0" layoutY="11.0" text="Choose the production index">
+      <Label fx:id="titleLabel" alignment="TOP_LEFT" layoutX="16.0" layoutY="11.0" prefHeight="48.0" prefWidth="246.0" text="Choose the production index" wrapText="true">
          <font>
             <Font size="17.0" />
          </font>
       </Label>
-      <TextField fx:id="inputTextField" layoutX="76.0" layoutY="48.0" prefHeight="29.0" prefWidth="126.0" promptText="production index" />
-      <Button fx:id="doneButton" layoutX="114.0" layoutY="88.0" mnemonicParsing="false" text="OK">
+      <TextField fx:id="inputTextField" layoutX="76.0" layoutY="68.0" prefHeight="29.0" prefWidth="126.0" promptText="give a number" />
+      <Button fx:id="doneButton" layoutX="114.0" layoutY="105.0" mnemonicParsing="false" text="OK">
          <font>
             <Font size="18.0" />
          </font>

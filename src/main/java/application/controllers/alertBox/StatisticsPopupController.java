@@ -1,5 +1,6 @@
-package application.controllers;
+package application.controllers.alertBox;
 
+import application.controllers.AbstractController;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.text.*;

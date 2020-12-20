@@ -1,10 +1,10 @@
 package entities;
 
-import datatypes.FollowedAnimalStatisticsContainer;
+import datatypes.containers.FollowedAnimalStatisticsContainer;
 import datatypes.Genotype;
-import datatypes.StatisticsContainer;
+import datatypes.containers.StatisticsContainer;
 import datatypes.Vector2d;
-import datatypes.observer.IAnimalStateObserver;
+import datatypes.observers.IAnimalStateObserver;
 import managers.StatisticsManager;
 
 import java.util.*;
@@ -33,7 +33,7 @@ public class Simulation implements IAnimalStateObserver {
         this.genomeLength = genomeLength;
         this.numberOfGenes = numberOfGenes;
 
-        statisticsManager = new StatisticsManager(numberOfGenes);
+        statisticsManager = new StatisticsManager();
         deadAnimalsBuffer = new LinkedList<>();
     }
 
@@ -46,7 +46,7 @@ public class Simulation implements IAnimalStateObserver {
         this.genomeLength = genomeLength;
         this.numberOfGenes = numberOfGenes;
 
-        statisticsManager = new StatisticsManager(numberOfGenes);
+        statisticsManager = new StatisticsManager();
         deadAnimalsBuffer = new LinkedList<>();
     }
 
@@ -117,6 +117,14 @@ public class Simulation implements IAnimalStateObserver {
         }
     }
 
+    public void simulateDay() {
+        removeDeadAnimals();
+        moveAnimals();
+        eatPlants();
+        reproduceAnimals();
+        generatePlants();
+    }
+
     public void removeDeadAnimals() {
         // It is the start of a day, so we increment the current day value
         statisticsManager.incrementDay();
@@ -135,12 +143,9 @@ public class Simulation implements IAnimalStateObserver {
         Iterator<Animal> iterator = map.getAnimalsIterator();
 
         while (iterator.hasNext()) {
-            //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
-            //        + " is being moved");
             Animal currentAnimal = iterator.next();
             currentAnimal.randomMove(moveEnergy);
         }
-        //System.out.println("Moved Animals");
     }
 
     public void eatPlants() {
@@ -169,9 +174,6 @@ public class Simulation implements IAnimalStateObserver {
         Iterator<Vector2d> iterator = map.getAnimalPositionsIterator();
 
         while (iterator.hasNext()) {
-            //System.out.println("Animal at position " + animal.getPosition() + " and with energy " + animal.getEnergy()
-            //        + " is being moved");
-
             // If there are more than 2 animals on a given position
             // then they may be able to reproduce
             List<Animal> currentAnimalList = map.getAnimalsListAt(iterator.next()).get();
@@ -182,17 +184,13 @@ public class Simulation implements IAnimalStateObserver {
                 child.ifPresent(animal -> animal.addStateObserver(this));
             }
         }
-
-        //System.out.println("Animals reproduced");
     }
 
     /**
      * Generates one plant in the steppe and one plant in the jungle.
      * If there are no available positions, does nothing.
      */
-    public void generatePlants() { ;
-        //System.out.println("Plants generated");
-
+    public void generatePlants() {
         Optional<Vector2d> randomPositionJungle = map.getRandomPositionFromJungle();
         Optional<Vector2d> randomPositionSteppe = map.getRandomPositionFromSteppe();
 
@@ -202,8 +200,6 @@ public class Simulation implements IAnimalStateObserver {
             newPlant.addPlantObserver(statisticsManager);
 
             newPlant.notifyAboutANewPlant();
-
-            //System.out.println("New plant is generated in jungle, at position " + randomPositionJungle);
         }
 
         if(randomPositionSteppe.isPresent()) {
@@ -212,8 +208,6 @@ public class Simulation implements IAnimalStateObserver {
             newPlant.addPlantObserver(statisticsManager);
 
             newPlant.notifyAboutANewPlant();
-
-            //System.out.println("New plant is generated in steppe, at position " + randomPositionSteppe);
         }
     }
 

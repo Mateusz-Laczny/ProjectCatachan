@@ -1,11 +1,11 @@
 package managers;
 
 import datatypes.Direction;
-import datatypes.FollowedAnimalStatisticsContainer;
-import datatypes.StatisticsContainer;
-import datatypes.observer.IAnimalEnergyObserver;
-import datatypes.observer.IAnimalStateObserver;
-import datatypes.observer.IPlantStateObserver;
+import datatypes.containers.FollowedAnimalStatisticsContainer;
+import datatypes.containers.StatisticsContainer;
+import datatypes.observers.IAnimalEnergyObserver;
+import datatypes.observers.IAnimalStateObserver;
+import datatypes.observers.IPlantStateObserver;
 import entities.Animal;
 import entities.Plant;
 
@@ -43,7 +43,7 @@ public class StatisticsManager implements IAnimalStateObserver, IAnimalEnergyObs
     private Animal lastAddedAnimal;
 
 
-    public StatisticsManager(int numberOfGeneTypes) {
+    public StatisticsManager() {
         currentDay = 1;
         energySum = 0;
         lifespanSum = 0;

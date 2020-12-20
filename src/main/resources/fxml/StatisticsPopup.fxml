@@ -6,18 +6,18 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.StatisticsPopupController">
+<AnchorPane prefHeight="311.0" prefWidth="460.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.alertBox.StatisticsPopupController">
    <children>
       <Label layoutX="14.0" layoutY="14.0" text="Followed Animal Statistics">
          <font>
             <Font size="32.0" />
          </font>
       </Label>
-      <Button fx:id="closeButton" layoutX="264.0" layoutY="341.0" mnemonicParsing="false" text="Close">
+      <Button fx:id="closeButton" layoutX="202.0" layoutY="265.0" mnemonicParsing="false" text="Close">
          <font>
             <Font size="16.0" />
          </font>
       </Button>
-      <TextFlow fx:id="statisticsText" layoutX="25.0" layoutY="66.0" lineSpacing="4.0" prefHeight="269.0" prefWidth="543.0" />
+      <TextFlow fx:id="statisticsText" layoutX="25.0" layoutY="66.0" lineSpacing="4.0" prefHeight="184.0" prefWidth="419.0" />
    </children>
 </AnchorPane>

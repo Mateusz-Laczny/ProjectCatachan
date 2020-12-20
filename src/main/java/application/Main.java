@@ -28,7 +28,7 @@ public class Main extends Application {
             stage.close();
         });
 
-        stage.setTitle("CatachanSimulator 1.0");
+        stage.setTitle("Catachan Simulator 1.0");
         stage.setScene(new Scene(root));
         stage.getScene().getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
         stage.show();

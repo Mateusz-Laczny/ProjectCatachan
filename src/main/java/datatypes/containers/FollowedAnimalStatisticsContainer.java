@@ -1,4 +1,4 @@
-package datatypes;
+package datatypes.containers;
 
 public class FollowedAnimalStatisticsContainer {
     public final int numberOfChildren;

@@ -1,4 +1,4 @@
-package datatypes.observer;
+package datatypes.observers;
 
 import entities.Plant;
 
