@@ -22,7 +22,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     private final Vector2d mapUpperRightCorner;
 
     // Different collections
-    private final List<Animal> animalsList;
+    private final Set<Animal> animalsList;
     private final Map<Vector2d, List<Animal>> animals;
     private final Map<Vector2d, Plant> plants;
 
@@ -75,7 +75,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         mapUpperRightCorner = new Vector2d(width - 1, height - 1);
 
         // Initializing collections
-        animalsList = new LinkedList<>();
+        animalsList = new HashSet<>();
         animals = new HashMap<>();
         plants = new HashMap<>();
         freePositionsSteppe = new HashSet<>();
@@ -138,7 +138,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         return new Vector2d(randomX, randomY);
     }
 
-    public Optional<Vector2d> getRandomPositionFromJungle() {
+    public Optional<Vector2d> getRandomFreePositionFromJungle() {
         if(!freePositionsJungle.isEmpty()) {
             List<Vector2d> freePositionsJungleArrayList = new ArrayList<>(freePositionsJungle);
 
@@ -149,7 +149,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         }
     }
 
-    public Optional<Vector2d> getRandomPositionFromSteppe() {
+    public Optional<Vector2d> getRandomFreePositionFromSteppe() {
         if(!freePositionsSteppe.isEmpty()) {
             List<Vector2d> freePositionsSteppeArrayList = new ArrayList<>(freePositionsSteppe);
 
@@ -225,15 +225,9 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
     public Optional<Animal> animalAt(Vector2d position) {
         if(animals.containsKey(position)) {
             if(!animals.get(position).isEmpty()) {
-                Animal highestEnergyAnimal = animals.get(position).get(0);
-
-                for (Animal animal : animals.get(position)) {
-                    if(animal.getEnergy() > highestEnergyAnimal.getEnergy()) {
-                        highestEnergyAnimal = animal;
-                    }
-                }
-
-                return Optional.of(highestEnergyAnimal);
+                // Animals at a given position should always be sorted
+                // decreasingly by their energy
+                return Optional.of(animals.get(position).get(0));
             }
         }
 
@@ -263,9 +257,17 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      */
     public void removeAnimalFromMap(Animal animal) {
         animalsList.remove(animal);
-        animals.get(animal.getPosition()).remove(animal);
-    }
 
+        List<Animal> animalsAtRemovedAnimalsPosition = animals.get(animal.getPosition());
+        animalsAtRemovedAnimalsPosition.remove(animal);
+
+        // We do not store empty lists in positions to animals map
+        if(animalsAtRemovedAnimalsPosition.isEmpty()) {
+            animals.remove(animal.getPosition());
+        }
+
+        updatePositionStatusForPlants(animal.getPosition());
+    }
 
     /**
      * Places animal on the map at the given position. If the position is incorrect, an error is thrown
@@ -277,7 +279,7 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      * @throws IllegalArgumentException
      *          If given position is incorrect
      */
-    private void placeAt(Animal animal, Vector2d position) {
+    private void placeAt(Animal animal, Vector2d position) throws IllegalArgumentException{
         if(isInsideMap(position)) {
             if (!animals.containsKey(position)) {
                 animals.put(position, new LinkedList<>());
@@ -300,6 +302,8 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         animalsList.add(animal);
         animal.addPositionObserver(this);
         placeAt(animal, animal.getPosition());
+        animals.get(animal.getPosition()).sort(Comparator.comparing(Animal::getEnergy).reversed());
+        removeFromPossiblePositionsForPlants(animal.getPosition());
     }
 
     /**
@@ -336,6 +340,10 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
 
         placeAt(animal, newPosition);
 
+        // We have to sort because always keep animals at a given position sorted by their energy
+        animalList.sort(Comparator.comparing(Animal::getEnergy).reversed());
+        animals.get(newPosition).sort(Comparator.comparing(Animal::getEnergy).reversed());
+
         // Updating the free positions collections
         updatePositionStatusForPlants(oldPosition);
         removeFromPossiblePositionsForPlants(newPosition);
@@ -361,11 +369,13 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
      *      Position to update
      */
     private void updatePositionStatusForPlants(Vector2d position) {
-        if(!animals.containsKey(position) && plantAt(position).isEmpty()) {
-            if (isInsideJungle(position)) {
-                freePositionsJungle.add(position);
-            } else {
-                freePositionsSteppe.add(position);
+        if(!animals.containsKey(position)) {
+            if(plantAt(position).isEmpty()) {
+                if (isInsideJungle(position)) {
+                    freePositionsJungle.add(position);
+                } else {
+                    freePositionsSteppe.add(position);
+                }
             }
         }
     }
@@ -383,5 +393,10 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
         } else {
             freePositionsSteppe.remove(position);
         }
+    }
+
+    // Methods for testing
+    public boolean isAFreePositionForPlants(Vector2d position) {
+        return freePositionsSteppe.contains(position) || freePositionsJungle.contains(position);
     }
 }

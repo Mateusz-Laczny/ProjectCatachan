@@ -11,6 +11,7 @@ import datatypes.publishers.IAnimalStatePublisher;
 
 import java.util.*;
 
+
 public class Animal extends AbstractMapElement implements IAnimalStatePublisher, IAnimalPositionPublisher,
         IAnimalEnergyPublisher {
     private Direction orientation;
@@ -199,13 +200,6 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
     public static void eat(List<Animal> animalsAtPosition, int energyFromPlant) {
         int maxEnergy = animalsAtPosition.get(0).energy;
 
-        // Searching for an animal with maximal energy
-        for(Animal animal : animalsAtPosition) {
-            if(animal.energy > maxEnergy) {
-                maxEnergy = animal.energy;
-            }
-        }
-
         // Removing animals with less than maximal energy
         List<Animal> animalsWithMaxEnergy = new LinkedList<>();
 
@@ -255,15 +249,14 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
         if(animalsReadyToReproduce.size() > 1) {
             Random random = new Random();
 
-            // Sorting animals by their energy value
-            animalsReadyToReproduce.sort(Comparator.comparing(Animal::getEnergy));
-            int numOfAnimalsWithMaximalEnergy = 0;
+            // Animals should always be sorted decreasingly according to their energy
             int maximalEnergy = animalsReadyToReproduce.get(0).getEnergy();
+            Set<Animal> animalsWithMaximalEnergy = new HashSet<>();
 
             // Counting the number of animals with the maximal energy
             for(Animal animal : animalsReadyToReproduce) {
                 if(animal.getEnergy() == maximalEnergy) {
-                    numOfAnimalsWithMaximalEnergy += 1;
+                    animalsWithMaximalEnergy.add(animal);
                 }
             }
 
@@ -272,13 +265,14 @@ public class Animal extends AbstractMapElement implements IAnimalStatePublisher,
             Animal secondParent = animalsReadyToReproduce.get(1);
 
             // Case two - there are multiple animals with the same maximal energy
-            if(numOfAnimalsWithMaximalEnergy > 2) {
-                animalsReadyToReproduce.removeIf(animal -> animal.getEnergy() != maximalEnergy);
+            if(animalsWithMaximalEnergy.size() > 2) {
+                List<Animal> shuffledAnimalsWithMaximalEnergy = new ArrayList<>(animalsWithMaximalEnergy);
+                Collections.shuffle(shuffledAnimalsWithMaximalEnergy);
 
-                firstParent = animalsReadyToReproduce.get(random.nextInt(animalsReadyToReproduce.size()));
-                animalsReadyToReproduce.remove(firstParent);
+                firstParent = animalsReadyToReproduce.get(0);
+                animalsReadyToReproduce.remove(0);
 
-                secondParent = animalsReadyToReproduce.get(random.nextInt(animalsReadyToReproduce.size()));
+                secondParent = animalsReadyToReproduce.get(0);
             }
 
             // Finding a position on the map for the child

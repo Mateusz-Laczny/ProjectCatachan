@@ -155,7 +155,7 @@ public class Simulation implements IAnimalStateObserver {
         while (iterator.hasNext()) {
             Plant currentPlant = iterator.next();
             Optional<List<Animal>> animalsAtPositionOptional = map.getAnimalsListAt(currentPlant.getPosition());
-            if(animalsAtPositionOptional.isPresent()) {
+            if(animalsAtPositionOptional.isPresent() ) {
                 Animal.eat(animalsAtPositionOptional.get(), plantEnergy);
                 plantsToRemove.add(currentPlant);
             }
@@ -191,8 +191,8 @@ public class Simulation implements IAnimalStateObserver {
      * If there are no available positions, does nothing.
      */
     public void generatePlants() {
-        Optional<Vector2d> randomPositionJungle = map.getRandomPositionFromJungle();
-        Optional<Vector2d> randomPositionSteppe = map.getRandomPositionFromSteppe();
+        Optional<Vector2d> randomPositionJungle = map.getRandomFreePositionFromJungle();
+        Optional<Vector2d> randomPositionSteppe = map.getRandomFreePositionFromSteppe();
 
         if(randomPositionJungle.isPresent()) {
             Plant newPlant = new Plant(randomPositionJungle.get());

@@ -86,11 +86,7 @@ public class MainApplicationController extends AbstractController implements Ini
         daysToSaveStatisticsToAFile = -1;
 
         startButton.setOnAction(event -> {
-            pauseButton.setDisable(false);
-            stopButton.setDisable(false);
-            startButton.setDisable(true);
 
-            Cell.canBeClicked = false;
 
             if(simulationThread != null && simulationThread.isAlive()) {
                 simulationThread.interrupt();
@@ -108,7 +104,16 @@ public class MainApplicationController extends AbstractController implements Ini
             // Unhighlighting all cells
             grid.unhighlightAll();
 
-            runSimulation();
+            try {
+                runSimulation();
+                pauseButton.setDisable(false);
+                stopButton.setDisable(false);
+                startButton.setDisable(true);
+
+                Cell.canBeClicked = false;
+            } catch (IllegalArgumentException e) {
+                showAlertBox(e.getMessage());
+            }
         });
 
         pauseButton.setOnAction(event -> {
@@ -205,6 +210,7 @@ public class MainApplicationController extends AbstractController implements Ini
 
                                 // Getting the statistics at the ned of the day
                                 StatisticsContainer dayStatistics = simulationManager.getCurrentDayStatistics();
+                                //System.out.println(dayStatistics.meanLifespan);
 
                                 populationsAndEnergyChartController.addSeriesEntry("Animals",
                                         dayStatistics.currentDay, dayStatistics.numberOfAnimals);

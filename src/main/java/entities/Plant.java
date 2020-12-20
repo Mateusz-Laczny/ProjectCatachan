@@ -6,6 +6,7 @@ import datatypes.observers.IPlantStateObserver;
 import datatypes.publishers.IPlantStatePublisher;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Plant extends AbstractMapElement implements IPlantStatePublisher {
@@ -14,6 +15,21 @@ public class Plant extends AbstractMapElement implements IPlantStatePublisher {
     public Plant(Vector2d position) {
         super(position, false, 1);
         observers = new HashSet<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Plant plant = (Plant) o;
+        // There can't be more than one plant at a given position,
+        // so the plant's position determines the plant
+        return this.position.equals(plant.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position);
     }
 
     /**

@@ -119,6 +119,22 @@ public class Genotype {
         createRandomGenotype();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Genotype genotype = (Genotype) o;
+        return geneTypesNumber == genotype.geneTypesNumber &&
+                Arrays.equals(genes, genotype.genes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(geneTypesNumber);
+        result = 31 * result + Arrays.hashCode(genes);
+        return result;
+    }
+
     private void checkParametersCorrectness(Genotype firstParentGenotype, Genotype secondParentGenotype)
             throws IllegalArgumentException {
 
@@ -141,10 +157,10 @@ public class Genotype {
      *      Genotype of the other parent
      */
     private void createGenotypeFromParents(Genotype dominatingParent, Genotype otherParent) {
-        int[] cutIndexes = new int[3];
+        int[] cutIndexes = new int[2];
 
-        cutIndexes[1] = random.nextInt(genes.length - 2);
-        cutIndexes[2] = random.nextInt(genes.length - cutIndexes[0] - 2) + cutIndexes[0] + 1;
+        cutIndexes[0] = random.nextInt(genes.length - 2);
+        cutIndexes[1] = random.nextInt(genes.length - cutIndexes[0] - 2) + cutIndexes[0] + 1;
 
         List<Integer> parts = new LinkedList<>();
         parts.add(1);
@@ -158,9 +174,9 @@ public class Genotype {
             parts.remove(partIndex);
 
             switch (chosenPart) {
-                case 1 -> copyGenes(dominatingParent, 0, cutIndexes[1]);
-                case 2 -> copyGenes(dominatingParent, cutIndexes[1] + 1, cutIndexes[2]);
-                case 3 -> copyGenes(dominatingParent, cutIndexes[2] + 1, genes.length - 1);
+                case 1 -> copyGenes(dominatingParent, 0, cutIndexes[0]);
+                case 2 -> copyGenes(dominatingParent, cutIndexes[0] + 1, cutIndexes[1]);
+                case 3 -> copyGenes(dominatingParent, cutIndexes[1] + 1, genes.length - 1);
             }
         }
 
@@ -168,9 +184,9 @@ public class Genotype {
         int remainingPart = parts.get(0);
 
         switch (remainingPart) {
-            case 1 -> copyGenes(otherParent, 0, cutIndexes[1]);
-            case 2 -> copyGenes(otherParent, cutIndexes[1] + 1, cutIndexes[2]);
-            case 3 -> copyGenes(otherParent, cutIndexes[2] + 1, genes.length - 1);
+            case 1 -> copyGenes(otherParent, 0, cutIndexes[0]);
+            case 2 -> copyGenes(otherParent, cutIndexes[0] + 1, cutIndexes[1]);
+            case 3 -> copyGenes(otherParent, cutIndexes[1] + 1, genes.length - 1);
         }
 
         // Genome can be out of order after the slicing

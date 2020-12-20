@@ -1,9 +1,11 @@
 package entities;
 
+import datatypes.Genotype;
 import datatypes.Vector2d;
 import org.junit.jupiter.api.Test;
 import util.randomMock.MockRandom;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -25,44 +27,97 @@ class WorldMapTest {
     }
 
     @Test
-    public void correctlyGeneratesPlants() {
-        List<Integer> valuesForRandom = List.of(0, 0);
-        Random mockup = new MockRandom(valuesForRandom);
-
+    void correctlyPlacesAnimals() {
         WorldMap map = new WorldMap(12, 12, 0.5);
-        map.setRandomGenerator(mockup);
-        Simulation simulation = new Simulation(map, 10, 10, 10,
-                10, 10);
-        simulation.generatePlants();
 
-        assertTrue(map.plantAt(Vector2d.zero()).isPresent());
-        assertTrue(map.plantAt(new Vector2d(3,3)).isPresent());
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 10,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(3, 3), 10,
+                new Genotype(32, 8));
+
+        assertTrue(map.animalAt(puszek.getPosition()).isPresent());
+        assertTrue(map.animalAt(pysia.getPosition()).isPresent());
+
+        assertEquals(1, map.getAnimalsListAt(puszek.getPosition()).get().size());
+        assertEquals(1, map.getAnimalsListAt(pysia.getPosition()).get().size());
     }
 
     @Test
-    public void CorrectlyRemovesPlants() {
-        
+    void correctlyRemovesAnimals() {
+        WorldMap map = new WorldMap(12, 12, 0.5);
+        Simulation simulation = new Simulation(map, 1, 1, 1, 32, 8);
+
+        Animal tyranid1 = new Animal(map, new Vector2d(0, 0), 10,
+                new Genotype(32, 8));
+
+        Animal tyranid2 = new Animal(map, new Vector2d(3, 3), 10,
+                new Genotype(32, 8));
+
+        tyranid1.addStateObserver(simulation);
+        tyranid2.addStateObserver(simulation);
+
+        tyranid1.die();
+        tyranid2.die();
+
+        simulation.removeDeadAnimals();
+
+        assertTrue(map.animalAt(tyranid1.getPosition()).isEmpty());
+        assertTrue(map.animalAt(tyranid2.getPosition()).isEmpty());
+
+        assertTrue(map.getAnimalsListAt(tyranid1.getPosition()).isEmpty());
+        assertTrue(map.getAnimalsListAt(tyranid2.getPosition()).isEmpty());
     }
 
-//    @Test
-//    public void animalsEatPlants() {
-//        List<Integer> valuesForRandom = List.of(0, 0);
-//        IRandomGenerator mockup = new MockRandom(valuesForRandom);
-//
-//        WorldMap map = new WorldMap(12, 12, 0.5, mockup);
-//        map.generatePlants();
-//
-//        Animal puszek = new Animal(map, new Vector2d(0, 0), 10,
-//                new Genotype(32, 8));
-//
-//        Animal pysia = new Animal(map, new Vector2d(3, 3), 10,
-//                new Genotype(32, 8));
-//
-//        map.eatPlants(5);
-//
-//        assertTrue(map.plantAt(puszek.getPosition()).isEmpty());
-//        assertTrue(map.plantAt(pysia.getPosition()).isEmpty());
-//    }
+    @Test
+    public void correctlyRemovesPlants() {
+        WorldMap map = new WorldMap(12, 12, 0.5);
+        Simulation simulation = new Simulation(map, 1, 1, 1, 32, 8);
+
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 10,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(3, 3), 10,
+                new Genotype(32, 8));
+
+        Plant plant1 = new Plant(puszek.getPosition());
+        Plant plant2 = new Plant(pysia.getPosition());
+
+        plant1.addPlantObserver(map);
+        plant2.addPlantObserver(map);
+
+        plant1.notifyAboutANewPlant();
+        plant2.notifyAboutANewPlant();
+
+        simulation.eatPlants();
+
+        assertTrue(map.plantAt(puszek.getPosition()).isEmpty());
+        assertTrue(map.plantAt(pysia.getPosition()).isEmpty());
+
+        Iterator<Plant> plantIterator = map.getPlantsIterator();
+
+        while (plantIterator.hasNext()) {
+            Plant currentPlant = plantIterator.next();
+            assertNotEquals(plant1, currentPlant);
+            assertNotEquals(plant2, currentPlant);
+        }
+    }
+
+    @Test
+    public void animalAtReturnsAnimalWithHighestEnergy() {
+        WorldMap map = new WorldMap(20, 20, 0.2);
+
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 20,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(0, 0), 20,
+                new Genotype(32, 8));
+
+        Animal skaven = new Animal(map, new Vector2d(0, 0), 30,
+                new Genotype(32, 8));
+
+        assertEquals(skaven, map.animalAt(new Vector2d(0, 0)).get());
+    }
 
     @Test
     public void showsCorrectNumberOfAnimals() {
@@ -98,5 +153,92 @@ class WorldMapTest {
         // 4 animals should die
         simulation.removeDeadAnimals();
         assertEquals(1, map.getNumberOfAnimals());
+    }
+
+    @Test
+    public void correctlyRemovesPositionFromFreePositionsForPlants() {
+        WorldMap map = new WorldMap(12, 12, 0.5);
+
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 10,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(3, 3), 10,
+                new Genotype(32, 8));
+
+        assertFalse(map.isAFreePositionForPlants(puszek.getPosition()));
+        assertFalse(map.isAFreePositionForPlants(pysia.getPosition()));
+
+        Plant plant1 = new Plant(new Vector2d(1, 1));
+        Plant plant2 = new Plant(new Vector2d(2, 2));
+
+        plant1.addPlantObserver(map);
+        plant2.addPlantObserver(map);
+
+        plant1.notifyAboutANewPlant();
+        plant2.notifyAboutANewPlant();
+
+        assertFalse(map.isAFreePositionForPlants(plant1.getPosition()));
+        assertFalse(map.isAFreePositionForPlants(plant2.getPosition()));
+    }
+
+    @Test
+    public void correctlyAddsPositionToFreePositionsForPlants() {
+        WorldMap map = new WorldMap(12, 12, 0.5);
+        Simulation simulation = new Simulation(map, 1, 1, 1, 32, 8);
+
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 10,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(3, 3), 10,
+                new Genotype(32, 8));
+
+        puszek.addStateObserver(simulation);
+        pysia.addStateObserver(simulation);
+
+        puszek.die();
+        pysia.die();
+
+        simulation.removeDeadAnimals();
+
+        assertTrue(map.isAFreePositionForPlants(puszek.getPosition()));
+        assertTrue(map.isAFreePositionForPlants(pysia.getPosition()));
+
+        Plant plant1 = new Plant(new Vector2d(1, 1));
+        Plant plant2 = new Plant(new Vector2d(2, 2));
+
+        plant1.addPlantObserver(map);
+        plant2.addPlantObserver(map);
+
+        plant1.notifyAboutANewPlant();
+        plant2.notifyAboutANewPlant();
+
+        plant1.removePlant();
+        plant2.removePlant();
+
+        assertTrue(map.isAFreePositionForPlants(plant1.getPosition()));
+        assertTrue(map.isAFreePositionForPlants(plant2.getPosition()));
+    }
+
+    @Test
+    void listOfAnimalsAtPositionIsCorrectlySorted() {
+        WorldMap map = new WorldMap(20, 20, 0.2);
+
+        Animal puszek = new Animal(map, new Vector2d(0, 0), 20,
+                new Genotype(32, 8));
+
+        Animal pysia = new Animal(map, new Vector2d(0, 0), 20,
+                new Genotype(32, 8));
+
+        Animal skaven = new Animal(map, new Vector2d(0, 0), 30,
+                new Genotype(32, 8));
+
+        List<Animal> listOfAnimalsAtPosition = map.getAnimalsListAt(Vector2d.zero()).get();
+
+        int previousEnergy = 30;
+
+        for(Animal animal : listOfAnimalsAtPosition) {
+            assertTrue(animal.getEnergy() <= previousEnergy);
+            previousEnergy = animal.getEnergy();
+        }
     }
 }
