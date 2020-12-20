@@ -2,7 +2,6 @@ package datatypes;
 
 import java.util.*;
 
-
 public class Genotype {
     private final int[] genes;
     private final int geneTypesNumber;
@@ -135,6 +134,13 @@ public class Genotype {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "Genotype{" +
+                "genes=" + Arrays.toString(genes) +
+                '}';
+    }
+
     private void checkParametersCorrectness(Genotype firstParentGenotype, Genotype secondParentGenotype)
             throws IllegalArgumentException {
 
@@ -207,6 +213,12 @@ public class Genotype {
         return genes.length;
     }
 
+    /**
+     * Returns a map where directions are keys, adn values
+     * represent the number of the gene of the given type in the genome
+     *
+     * @return A Map object, where keys are of type Direction, and the values are integers
+     */
     public Map<Direction, Integer> getGenesCount() {
         Map<Direction, Integer> geneCount = new HashMap<>();
 
@@ -222,13 +234,6 @@ public class Genotype {
     }
 
     // Methods
-    @Override
-    public String toString() {
-        return "Genotype{" +
-                "genes=" + Arrays.toString(genes) +
-                '}';
-    }
-
     /**
      * Returns a random direction based on the genes in the genotype
      * @return A Direction enum value

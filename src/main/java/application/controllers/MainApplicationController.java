@@ -154,7 +154,7 @@ public class MainApplicationController extends AbstractController implements Ini
 
         loadButton.setOnAction(event -> {
             startButton.setDisable(false);
-            load();
+            loadParametersFromFile();
         });
 
         followButton.setOnAction(event -> {
@@ -198,7 +198,6 @@ public class MainApplicationController extends AbstractController implements Ini
                     List.of("Avg. number of children"));
             genesChartController = new BarChartController(genesChart);
 
-
             simulationThread = new Thread(() -> {
                 while(!Thread.currentThread().isInterrupted()){
                     Platform.runLater(() -> {
@@ -235,6 +234,7 @@ public class MainApplicationController extends AbstractController implements Ini
                                 if(daysToShowStatisticsPopup == 0) {
                                     running = false;
                                     followButton.setDisable(false);
+                                    resumeButton.setDisable(false);
 
                                     daysToShowStatisticsPopup = -1;
                                     showStatisticsWindow(simulationManager.getFollowedAnimalStatistics());
@@ -337,7 +337,6 @@ public class MainApplicationController extends AbstractController implements Ini
             layout = loader.load();
             Scene scene = new Scene(layout);
 
-
             Stage popupStage = new Stage();
 
             NumberInputAlertBoxController numberInputAlertBoxController = loader.getController();
@@ -366,7 +365,7 @@ public class MainApplicationController extends AbstractController implements Ini
         return result;
     }
 
-    private void load() {
+    private void loadParametersFromFile() {
         String currentDirectory = System.getProperty("user.dir");
 
         try {
@@ -392,11 +391,11 @@ public class MainApplicationController extends AbstractController implements Ini
 
                     if (animalAtPosition.isPresent()) {
                         if(animalAtPosition.get().equals(simulationManager.getFollowedAnimal())) {
-                            grid.getCell(j, i).setColour(Color.rgb(255, 201, 54, 1));
+                            grid.getCell(j, i).setColour(Color.rgb(237, 7, 214, 1));
                         } else {
                             // We choose the red value based on the animal energy
-                            // 0 energy - red
-                            // starting energy - brown (153)
+                            // 0 energy - black
+                            // starting energy - orange
                             float energyMultiplayer = (float) animalAtPosition.get().getEnergy() / parameters.startEnergy;
                             int redValue = (int) (255 * energyMultiplayer);
                             int greenValue = (int) (132 * energyMultiplayer);
@@ -457,7 +456,7 @@ public class MainApplicationController extends AbstractController implements Ini
         }
     }
 
-    public void cellUnHighlighted(Vector2d position) {
+    public void cellUnhighlighted() {
         statisticsList.getItems().clear();
     }
 

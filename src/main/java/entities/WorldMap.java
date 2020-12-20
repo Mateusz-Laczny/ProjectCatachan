@@ -336,12 +336,13 @@ public class WorldMap implements IAnimalPositionObserver, IPlantStateObserver {
 
         if(animalList.isEmpty()) {
             animals.remove(oldPosition);
+        } else {
+            animalList.sort(Comparator.comparing(Animal::getEnergy).reversed());
         }
 
         placeAt(animal, newPosition);
 
         // We have to sort because always keep animals at a given position sorted by their energy
-        animalList.sort(Comparator.comparing(Animal::getEnergy).reversed());
         animals.get(newPosition).sort(Comparator.comparing(Animal::getEnergy).reversed());
 
         // Updating the free positions collections

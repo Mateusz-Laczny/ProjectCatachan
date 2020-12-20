@@ -31,7 +31,7 @@ public class Cell extends StackPane {
                     grid.cellHighlighted(this);
                 } else if(event.isSecondaryButtonDown()) {
                     cell.unhighlight();
-                    grid.cellUnHighlighted(this);
+                    grid.cellUnhighlighted();
                 }
             }
         });

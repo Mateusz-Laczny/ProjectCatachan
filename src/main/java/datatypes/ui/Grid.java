@@ -2,7 +2,6 @@ package datatypes.ui;
 
 import application.controllers.MainApplicationController;
 import datatypes.Vector2d;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 
 public class Grid extends Pane {
@@ -54,8 +53,8 @@ public class Grid extends Pane {
         mainApplicationController.cellHighlighted(new Vector2d(cell.getColumn(), cell.getRow()));
     }
 
-    public void cellUnHighlighted(Cell cell) {
-        mainApplicationController.cellUnHighlighted(new Vector2d(cell.getColumn(), cell.getRow()));
+    public void cellUnhighlighted() {
+        mainApplicationController.cellUnhighlighted();
     }
 
     /**
